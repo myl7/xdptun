@@ -62,9 +62,58 @@ int uot_send_f(struct xdp_md *ctx) {
 }
 
 SEC("uot_recv")
-int uot_recv_f(struct xdp_md *ctx) {
-  // void *data = (void *) (long) ctx->data;
-  // void *data_end = (void *) (long) ctx->data_end;
+int uot_recv_fn(struct xdp_md *ctx) {
+  void *data = (void *) (long) ctx->data;
+  void *data_end = (void *) (long) ctx->data_end;
+
+  struct ethhdr *ethh = data;
+  void *ethh_end = (void *) ethh + sizeof(*ethh);
+  if (ethh_end > data_end) {
+    return XDP_DROP;
+  }
+  if (ethh->h_proto != ETH_P_IP) {
+    return XDP_PASS;
+  }
+
+  struct iphdr *iph = data + sizeof(struct ethhdr);
+  void *iph_end = (void *) iph + sizeof(*iph);
+  if (iph_end > data_end) {
+    return XDP_DROP;
+  }
+  if (iph->protocol != IPPROTO_TCP) {
+    return XDP_PASS;
+  }
+
+  struct tcphdr *tcph = data + sizeof(struct ethhdr) + (iph->ihl * 4);
+  void *tcph_end = (void *) tcph + sizeof(*tcph);
+  if (tcph_end > data_end) {
+    return XDP_DROP;
+  }
+  if ((tcph->res1 & 0x8) == 0) {
+    return XDP_PASS;
+  }
+
+  struct udphdr *udph = data + sizeof(struct ethhdr) + (iph->ihl * 4) + tcph->doff;
+  void *udph_end = (void *) udph + sizeof(*udph);
+  if (udph_end > data_end) {
+    return XDP_DROP;
+  }
+
+  void *udpd_end = data + sizeof(struct ethhdr) + iph->tot_len;
+  if (udpd_end > data_end || udph->len != udph_end - (void *) udph - sizeof(struct udphdr)) {
+    return XDP_DROP;
+  }
+
+  memmove(tcph, udph, sizeof(*udph));
+
+  iph->tot_len = udph->len + (iph->ihl * 4);
+  iph->check = 0;
+  iph->check = 0;
+
+  void *new_data_end = (void *) iph + iph->tot_len;
+  if (bpf_xdp_adjust_tail(ctx, (int) (new_data_end - data_end)) < 0) {
+    return XDP_DROP;
+  }
 
   return XDP_TX;
 }
