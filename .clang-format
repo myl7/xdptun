@@ -1,0 +1,7 @@
+BasedOnStyle: Google
+DerivePointerAlignment: false
+PointerAlignment: Right
+ColumnLimit: 120
+AllowShortFunctionsOnASingleLine: Empty
+AlignAfterOpenBracket: DontAlign
+ContinuationIndentWidth: 2
