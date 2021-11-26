@@ -11,7 +11,3 @@
 #ifndef memmove
 #define memmove(dest, src, n) __builtin_memmove((dest), (src), (n))
 #endif  // memmove
-
-#ifndef always_inline
-#define always_inline inline __attribute__((always_inline))
-#endif  // always_inline
