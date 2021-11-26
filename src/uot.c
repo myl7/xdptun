@@ -53,8 +53,10 @@ int uot_send_f(struct xdp_md *ctx) {
   memmove(new_udph, udph, sizeof(*new_udph));
 
   struct tcphdr *tcph = (void *) udph;
+  memset(tcph, 0, sizeof(*tcph));
   tcph->res1 = 0x8;
   tcph->doff += sizeof(*tcph);
+  tcph->check = 0;
 
   return XDP_TX;
 }
