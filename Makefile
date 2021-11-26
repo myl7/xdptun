@@ -4,7 +4,7 @@ BUILD_DIR ?= build
 SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
 TARGETS = $(SRC_FILES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 INCLUDE_FILES = $(wildcard $(INCLUDE_DIR)/*.h)
-CFLAGS = -O2 $(if $(DEBUG),-g ,)-Wall -target bpf -I$(INCLUDE_DIR)
+CFLAGS = -O2 $(if $(DEBUG),-g -D DEBUG ,)-Wall -target bpf -I$(INCLUDE_DIR)
 CLANG ?= clang
 
 all: mkdir $(TARGETS)

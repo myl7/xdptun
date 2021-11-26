@@ -8,6 +8,7 @@
 #include <linux/in.h>
 #include <bpf/bpf_helpers.h>
 #include "mem.h"
+#include "log.h"
 
 char _license[] SEC("license") = "GPL";  // NOLINT(bugprone-reserved-identifier)
 
@@ -26,6 +27,7 @@ int uot_send_f(struct xdp_md *ctx) {
     return XDP_ABORTED;
   }
   if (ethh->h_proto != ETH_P_IP) {
+    log_debug_pass4proto("eth", ETH_P_IP, ethh->h_proto);
     return XDP_PASS;
   }
 
@@ -35,6 +37,7 @@ int uot_send_f(struct xdp_md *ctx) {
     return XDP_ABORTED;
   }
   if (iph->protocol != IPPROTO_UDP) {
+    log_debug_pass4proto("ip", IPPROTO_UDP, iph->protocol);
     return XDP_PASS;
   }
 
@@ -72,6 +75,7 @@ int uot_recv_fn(struct xdp_md *ctx) {
     return XDP_DROP;
   }
   if (ethh->h_proto != ETH_P_IP) {
+    log_debug_pass4proto("eth", ETH_P_IP, ethh->h_proto);
     return XDP_PASS;
   }
 
@@ -90,6 +94,7 @@ int uot_recv_fn(struct xdp_md *ctx) {
     return XDP_DROP;
   }
   if ((tcph->res1 & 0x8) == 0) {
+    log_debug_pass4proto("ip", IPPROTO_UDP, iph->protocol);
     return XDP_PASS;
   }
 
