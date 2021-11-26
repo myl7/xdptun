@@ -7,6 +7,7 @@
 #include <linux/udp.h>
 #include <linux/in.h>
 #include <bpf/bpf_helpers.h>
+#include <bpf/bpf_endian.h>
 #include "mem.h"
 #include "log.h"
 
@@ -26,8 +27,9 @@ int uot_send_f(struct xdp_md *ctx) {
   if (ethh_end > data_end) {
     return XDP_ABORTED;
   }
-  if (ethh->h_proto != ETH_P_IP) {
-    log_debug_pass4proto("eth", ETH_P_IP, ethh->h_proto);
+  int p = bpf_ntohs(ethh->h_proto);
+  if (p != ETH_P_IP) {
+    log_debug_pass4proto("eth", ETH_P_IP, p);
     return XDP_PASS;
   }
 
@@ -36,8 +38,9 @@ int uot_send_f(struct xdp_md *ctx) {
   if (iph_end > data_end) {
     return XDP_ABORTED;
   }
-  if (iph->protocol != IPPROTO_UDP) {
-    log_debug_pass4proto("ip", IPPROTO_UDP, iph->protocol);
+  p = bpf_ntohs(iph->protocol);
+  if (p != IPPROTO_UDP) {
+    log_debug_pass4proto("ip", IPPROTO_UDP, p);
     return XDP_PASS;
   }
 
@@ -57,8 +60,8 @@ int uot_send_f(struct xdp_md *ctx) {
 
   struct tcphdr *tcph = (void *) udph;
   memset(tcph, 0, sizeof(*tcph));
-  tcph->res1 = 0x8;
-  tcph->doff += sizeof(*tcph);
+  tcph->res1 |= bpf_htons(0x8);
+  tcph->doff += bpf_htons(sizeof(*tcph));
   tcph->check = 0;
 
   return XDP_TX;
@@ -74,8 +77,9 @@ int uot_recv_fn(struct xdp_md *ctx) {
   if (ethh_end > data_end) {
     return XDP_DROP;
   }
-  if (ethh->h_proto != ETH_P_IP) {
-    log_debug_pass4proto("eth", ETH_P_IP, ethh->h_proto);
+  int p = bpf_ntohs(ethh->h_proto);
+  if (p != ETH_P_IP) {
+    log_debug_pass4proto("eth", ETH_P_IP, p);
     return XDP_PASS;
   }
 
@@ -84,7 +88,9 @@ int uot_recv_fn(struct xdp_md *ctx) {
   if (iph_end > data_end) {
     return XDP_DROP;
   }
-  if (iph->protocol != IPPROTO_TCP) {
+  p = bpf_ntohs(iph->protocol);
+  if (p != IPPROTO_TCP) {
+    log_debug_pass4proto("ip", IPPROTO_TCP, p);
     return XDP_PASS;
   }
 
@@ -93,8 +99,7 @@ int uot_recv_fn(struct xdp_md *ctx) {
   if (tcph_end > data_end) {
     return XDP_DROP;
   }
-  if ((tcph->res1 & 0x8) == 0) {
-    log_debug_pass4proto("ip", IPPROTO_UDP, iph->protocol);
+  if ((bpf_ntohs(tcph->res1) & 0x8) == 0) {
     return XDP_PASS;
   }
 
@@ -111,7 +116,7 @@ int uot_recv_fn(struct xdp_md *ctx) {
 
   memmove(tcph, udph, sizeof(*udph));
 
-  iph->tot_len = udph->len + (iph->ihl * 4);
+  iph->tot_len = bpf_htons(udph->len + (iph->ihl * 4));
   iph->check = 0;
   iph->check = 0;
 

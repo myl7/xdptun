@@ -10,9 +10,9 @@
 
 #ifdef LOG_DEBUG
 #define log_debug_pass4proto(proto, expected, got) ({ \
-  char ____proto[] = proto; \
-  bpf_printk("%s proto mismatch: expected %d, got %d", ____proto, expected, got); \
+  char ____proto[] = (proto); \
+  bpf_printk("%s proto mismatch: expected %d, got %d", ____proto, (expected), (got)); \
 })
 #else  // LOG_DEBUG
-#define log_debug_pass4proto(proto, expected, got) ;
+#define log_debug_pass4proto(proto, expected, got)
 #endif  // LOG_DEBUG
