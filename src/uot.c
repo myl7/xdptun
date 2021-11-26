@@ -40,9 +40,8 @@ int uot_send_f(struct xdp_md *ctx) {
   if (iph_end > data_end) {
     return XDP_ABORTED;
   }
-  p = bpf_ntohs(iph->protocol);
-  if (p != IPPROTO_UDP) {
-    log_debug_pass4proto("ip", IPPROTO_UDP, p);
+  if (iph->protocol != IPPROTO_UDP) {
+    log_debug_pass4proto("ip", IPPROTO_UDP, iph->protocol);
     return XDP_PASS;
   }
 
@@ -92,9 +91,8 @@ int uot_recv_fn(struct xdp_md *ctx) {
   if (iph_end > data_end) {
     return XDP_DROP;
   }
-  p = bpf_ntohs(iph->protocol);
-  if (p != IPPROTO_TCP) {
-    log_debug_pass4proto("ip", IPPROTO_TCP, p);
+  if (iph->protocol != IPPROTO_TCP) {
+    log_debug_pass4proto("ip", IPPROTO_TCP, iph->protocol);
     return XDP_PASS;
   }
 
