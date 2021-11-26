@@ -65,6 +65,7 @@ int uot_send_f(struct xdp_md *ctx) {
   tcph->doff += bpf_htons(sizeof(*tcph));
   tcph->check = 0;
 
+  log_debug("send");
   return XDP_TX;
 }
 
@@ -127,5 +128,6 @@ int uot_recv_fn(struct xdp_md *ctx) {
     return XDP_DROP;
   }
 
+  log_debug("recv");
   return XDP_TX;
 }

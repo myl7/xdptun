@@ -13,6 +13,8 @@
   char ____proto[] = (proto); \
   bpf_printk("%s proto mismatch: expected %d, got %d", ____proto, (expected), (got)); \
 })
+#define log_debug(msg, ...) bpf_printk(msg, ##__VA_ARGS__)
 #else  // LOG_DEBUG
 #define log_debug_pass4proto(proto, expected, got)
+#define log_debug(msg, ...)
 #endif  // LOG_DEBUG
