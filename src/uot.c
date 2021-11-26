@@ -29,7 +29,9 @@ int uot_send_f(struct xdp_md *ctx) {
   }
   int p = bpf_ntohs(ethh->h_proto);
   if (p != ETH_P_IP) {
-    log_debug_pass4proto("eth", ETH_P_IP, p);
+    if (p != ETH_P_ARP) {
+      log_debug_pass4proto("eth", ETH_P_IP, p);
+    }
     return XDP_PASS;
   }
 
@@ -79,7 +81,9 @@ int uot_recv_fn(struct xdp_md *ctx) {
   }
   int p = bpf_ntohs(ethh->h_proto);
   if (p != ETH_P_IP) {
-    log_debug_pass4proto("eth", ETH_P_IP, p);
+    if (p != ETH_P_ARP) {
+      log_debug_pass4proto("eth", ETH_P_IP, p);
+    }
     return XDP_PASS;
   }
 
