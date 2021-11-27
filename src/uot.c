@@ -70,7 +70,7 @@ int uot_send_f(struct xdp_md *ctx) {
   iph->check = (check & 0xffff) + (check >> 16);
 
   log_debug("send");
-  return XDP_TX;
+  return XDP_PASS;
 }
 
 SEC("uot_recv")
@@ -136,5 +136,5 @@ int uot_recv_fn(struct xdp_md *ctx) {
   }
 
   log_debug("recv");
-  return XDP_TX;
+  return XDP_PASS;
 }
