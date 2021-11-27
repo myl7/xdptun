@@ -65,6 +65,10 @@ int uot_send_f(struct xdp_md *ctx) {
   tcph->doff += bpf_htons(sizeof(*tcph));
   tcph->check = 0;
 
+  iph->protocol = IPPROTO_TCP;
+  __u32 check = (__u32) iph->check + IPPROTO_TCP - IPPROTO_UDP;
+  iph->check = (check & 0xffff) + (check >> 16);
+
   log_debug("send");
   return XDP_TX;
 }
@@ -122,6 +126,9 @@ int uot_recv_fn(struct xdp_md *ctx) {
   iph->tot_len = bpf_htons(udph->len + (iph->ihl * 4));
   iph->check = 0;
   iph->check = 0;
+  iph->protocol = IPPROTO_UDP;
+  __u32 check = (__u32) iph->check + IPPROTO_UDP - IPPROTO_TCP;
+  iph->check = (check & 0xffff) + (check >> 16);
 
   void *new_data_end = (void *) iph + iph->tot_len;
   if (bpf_xdp_adjust_tail(ctx, (int) (new_data_end - data_end)) < 0) {
