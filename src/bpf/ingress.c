@@ -5,6 +5,7 @@
 #include <linux/if_ether.h>
 #include <linux/ip.h>
 #include <linux/tcp.h>
+#include <linux/udp.h>
 #include <linux/in.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
@@ -47,5 +48,21 @@ int ingress(struct xdp_md *ctx) {
 
   void *tcp_data = (void *)tcp + tcp->doff * 4;
 
-  return XDP_PASS;
+#ifdef DEBUG
+  bpf_printk("ingress recv");
+#endif
+
+  struct udphdr *udp = tcp_data;
+  if (check_bound(udp, udp + 1, data, data_end)) {
+    return XDP_PASS;
+  }
+
+  memmove(tcp, udp, bpf_ntohs(udp->len));
+  bpf_xdp_adjust_tail(ctx, sizeof(struct tcphdr));
+
+#ifdef DEBUG
+  bpf_printk("ingress done");
+#endif
+
+  return XDP_TX;
 }
