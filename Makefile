@@ -10,7 +10,7 @@ BUILD_DIR ?= build
 BPF_DIR = src/bpf
 BPF_FILES = $(wildcard $(BPF_DIR)/*.c)
 BPF_TARGETS = $(BPF_FILES:$(BPF_DIR)/%.c=$(BUILD_DIR)/%.o)
-BPF_FLAGS = -O2 -Wall -Werror -target bpf -I$(INCLUDE_DIR)$(if $(DEBUG), -g -DDEBUG,)
+BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR)$(if $(DEBUG), -g -DDEBUG,)
 
 # Executable config
 CLANG ?= clang
@@ -33,4 +33,4 @@ format:
 	$(CLANG_FORMAT) -i src/**/*.c
 
 format-check:
-	$(CLANG_FORMAT) -n --Werror src/**/*.c
+	$(CLANG_FORMAT) -n src/**/*.c
