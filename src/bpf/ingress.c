@@ -52,13 +52,23 @@ int ingress(struct xdp_md *ctx) {
   bpf_printk("ingress recv");
 #endif
 
-  struct udphdr *udp = tcp_data;
-  if (check_bound(udp, udp + 1, data, data_end)) {
+  ip->protocol = IPPROTO_UDP;
+
+  __u16 ip_tot_len = bpf_ntohs(ip->tot_len);
+  // 12 bytes are moved to tail to leave enough space to transform UDP header to TCP header
+  if (ip_tot_len < 12) {
+    return XDP_PASS;
+  }
+  ip_tot_len -= 12;
+  ip_tot_len &= 0xfff;
+
+  void *data_bak = (void *)ip + ip_tot_len;
+  if (check_bound(data_bak, data_bak + 12, data, data_end)) {
     return XDP_PASS;
   }
 
-  memmove(tcp, udp, bpf_ntohs(udp->len));
-  bpf_xdp_adjust_tail(ctx, sizeof(struct tcphdr));
+  memmove((void *)tcp + 4, data_bak, 12);
+  bpf_xdp_adjust_tail(ctx, -12);
 
 #ifdef DEBUG
   bpf_printk("ingress done");

@@ -51,8 +51,8 @@ int egress(struct __sk_buff *skb) {
 #endif
 
   ip->protocol = IPPROTO_TCP;
-  // To convert UDP header to TCP header, 12 more bytes are required
-  bpf_skb_adjust_room(skb, 12, BPF_ADJ_ROOM_NET, BPF_F_ADJ_ROOM_NO_CSUM_RESET);
+  // 12 bytes are moved to tail to leave enough space to transform UDP header to TCP header
+  bpf_skb_change_tail(skb, skb->len + 12, 0);
 
   data = (void *)(long)skb->data;
   data_end = (void *)(long)skb->data_end;
@@ -72,13 +72,14 @@ int egress(struct __sk_buff *skb) {
 
   struct tcphdr *tcp = (void *)ip + ip->ihl * 4;
   if (check_bound(tcp, tcp + 1, data, data_end)) {
-    return XDP_PASS;
+    return TC_ACT_OK;
   }
 
-  memcpy(tcp, (void *)tcp + 12, 6);
-  memset(tcp + 6, 0, 10);
-  tcp->check = tcp->urg_ptr;
-  tcp->urg_ptr = 0;
+  __u8 buf[12];
+  memcpy(buf, (void *)tcp + 4, 12);
+  memset((void *)tcp + 4, 0, 12);
+  unsigned offset = (void *)ip - data + bpf_ntohs(ip->tot_len);
+  bpf_skb_store_bytes(skb, offset, buf, 12, 0);
 
 #ifdef DEBUG
   bpf_printk("egress done");
