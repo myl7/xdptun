@@ -20,7 +20,10 @@ all: mkdir $(BPF_TARGETS)
 
 .PHONY: all mkdir clean format format-check
 
-$(BUILD_DIR)/%.o: $(BPF_DIR)/%.c
+$(BUILD_DIR)/ingress.o: $(BPF_DIR)/ingress.c $(INCLUDE_DIR)/mem.h
+	$(CLANG) $(BPF_FLAGS) -c $< -o $@
+
+$(BUILD_DIR)/egress.o: $(BPF_DIR)/egress.c $(INCLUDE_DIR)/mem.h
 	$(CLANG) $(BPF_FLAGS) -c $< -o $@
 
 mkdir:
@@ -30,7 +33,7 @@ clean:
 	-rm -rf $(BUILD_DIR)
 
 format:
-	$(CLANG_FORMAT) -i src/**/*.c
+	$(CLANG_FORMAT) -i src/**/*.c include/*.h
 
 format-check:
-	$(CLANG_FORMAT) -n src/**/*.c
+	$(CLANG_FORMAT) -n src/**/*.c include/*.h
