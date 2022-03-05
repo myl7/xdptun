@@ -1,6 +1,8 @@
 // Copyright (C) 2021-2022 myl7
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#define BPF_NO_GLOBAL_DATA
+
 #include <linux/bpf.h>
 #include <linux/pkt_cls.h>
 #include <linux/if_ether.h>
