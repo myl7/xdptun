@@ -93,7 +93,7 @@ eBPF
 
 Linux 网络栈上的 BPF：
 
-- XDP：ingress（入方向），无 skb 分配
+- XDP：ingress（入方向），无 SKB 分配
 - TC BPF：ingress/egress（入出双向）
 
 均可 offload，但仅少数网卡支持
@@ -111,7 +111,156 @@ Linux 网络栈上的 BPF：
 ```mermaid
 flowchart LR
   S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[move 12 bytes] --> S5[L3 fields & checksum] --> S6[return TC_ACT_OK]
+  subgraph now
+    S1
+  end
 ```
+
+`struct __sk_buff *skb` 提供 `void *data` 和 `void *data_end`
+
+从 `void *data` 开始将指针 cast 为 L2 `struct ethhdr *` -> L3 `struct iphdr *` -> L4 `struct udphdr *`，校验边界并依次移进，解析 header 并满足 verifier 要求
+
+截留 L3 为 IP（目前限于 IPv4）= `ETH_P_IP` -> L4 为 UDP = `IPPROTO_UDP` 的包，否则直接 `return TC_ACT_OK` 跳过
+
+---
+
+# BPF 及 XDP 的实现细节
+
+出方向
+
+```mermaid
+flowchart LR
+  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[move 12 bytes] --> S5[L3 fields & checksum] --> S6[return TC_ACT_OK]
+  subgraph now
+    S2
+    S3
+  end
+```
+
+`bpf_skb_change_tail` 扩大 SKB tail 空间以在包末尾添加 12 bytes
+
+此调用后所有 L2-L4 header pointer invalid，需要重新进行 check
+
+check 过程中，利用 L3 IP header `total length` field 正向获取到原包末尾指针以访问新添加的 12 bytes 以满足 verifier 要求：verifier 不允许从 `data_end` 开始移动指针，因为合法的指针范围是 `[data, data_end)` 不含 `data_end`
+
+---
+
+# BPF 及 XDP 的实现细节
+
+出方向
+
+```mermaid
+flowchart LR
+  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[move 12 bytes] --> S5[L3 fields & checksum] --> S6[return TC_ACT_OK]
+  subgraph now
+    S4
+  end
+```
+
+移动 L4 UDP header 后 data 部分前 12 bytes 到包末尾新增的 12 bytes，伪造 TCP header：
+
+```
+ 0      7 8     15 16    23 24    31
++--------+--------+--------+--------+
+|     Source      |   Destination   |
+|      Port       |      Port       |
++--------+--------+--------+--------+
+|     Length      |    Checksum     |
++--------+--------+--------+--------+
+|          data octets ...
++---------------- ...
+```
+
+变为：
+
+<style>
+pre {
+  font-size: 0.8rem;
+}
+</style>
+
+---
+
+# BPF 及 XDP 的实现细节
+
+出方向
+
+```mermaid
+flowchart LR
+  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[move 12 bytes] --> S5[L3 fields & checksum] --> S6[return TC_ACT_OK]
+  subgraph now
+    S4
+  end
+```
+
+```
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Source Port (kept)       |   Destination Port (kept)     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Sequence Number (Length + Checksum originally)        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Acknowledgment Number                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Data |           |U|A|P|R|S|F|                               |
+| Offset| Reserved  |R|C|S|S|Y|I|            Window             |
+|       |           |G|K|H|T|N|N|                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Checksum            |         Urgent Pointer        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          data left                            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+无可选的 `Options` 及 `Padding`
+
+<style>
+pre {
+  font-size: 0.8rem;
+}
+</style>
+
+---
+
+# BPF 及 XDP 的实现细节
+
+出方向
+
+```mermaid
+flowchart LR
+  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[move 12 bytes] --> S5[L3 fields & checksum] --> S6[return TC_ACT_OK]
+  subgraph now
+    S5
+    S6
+  end
+```
+
+更新 L3 IP header `protocol`、`total length`、`header checksum` 等 field 后 `return TC_ACT_OK` 结束：
+
+```
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+<style>
+pre {
+  font-size: 0.8rem;
+}
+</style>
 
 ---
 
@@ -124,7 +273,117 @@ flowchart LR
 ```mermaid
 flowchart LR
   S1[L2-L4 check] --> S2[move 12 bytes back] --> S3[L3 fields & checksum] --> S4[bpf_xdp_adjust_tail] --> S5[return XDP_TX]
+  subgraph now
+    S1
+  end
 ```
+
+`struct xdp_md *ctx` 依然提供 `void *data` 和 `void *data_end`，但是没有 SKB 的相关协议支持
+
+校验边界、依次移进、解析 header、满足 verifier 要求的过程与出方向的大致相同
+
+截留 L3 为 IP（目前限于 IPv4）= `ETH_P_IP` -> L4 为 TCP = `IPPROTO_TCP` 的包，否则直接 `return XDP_PASS` 跳过
+
+---
+
+# BPF 及 XDP 的实现细节
+
+入方向
+
+```mermaid
+flowchart LR
+  S1[L2-L4 check] --> S2[move 12 bytes back] --> S3[L3 fields & checksum] --> S4[bpf_xdp_adjust_tail] --> S5[return XDP_TX]
+  subgraph now
+    S2
+  end
+```
+
+同样地利用 L3 IP header `total length` field 正向获取到包末尾指针访问尾 12 bytes 恢复到 TCP header 内对应位置：
+
+```
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Source Port (kept)       |   Destination Port (kept)     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Sequence Number (Length + Checksum originally)        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Acknowledgment Number                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Data |           |U|A|P|R|S|F|                               |
+| Offset| Reserved  |R|C|S|S|Y|I|            Window             |
+|       |           |G|K|H|T|N|N|                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Checksum            |         Urgent Pointer        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          data left                            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+<style>
+pre {
+  font-size: 0.8rem;
+}
+</style>
+
+---
+
+# BPF 及 XDP 的实现细节
+
+入方向
+
+```mermaid
+flowchart LR
+  S1[L2-L4 check] --> S2[move 12 bytes back] --> S3[L3 fields & checksum] --> S4[bpf_xdp_adjust_tail] --> S5[return XDP_TX]
+  subgraph now
+    S3
+  end
+```
+
+同样地更新 L3 IP header `protocol`、`total length`、`header checksum` 等 field：
+
+```
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+<style>
+pre {
+  font-size: 0.8rem;
+}
+</style>
+
+---
+
+# BPF 及 XDP 的实现细节
+
+入方向
+
+```mermaid
+flowchart LR
+  S1[L2-L4 check] --> S2[move 12 bytes back] --> S3[L3 fields & checksum] --> S4[bpf_xdp_adjust_tail] --> S5[return XDP_TX]
+  subgraph now
+    S4
+    S5
+  end
+```
+
+`bpf_xdp_adjust_tail` 收缩 tail 空间以移除包末尾的 12 bytes，此后所有 L2-L4 header pointer invalid
+
+最后 `return XDP_TX` 让包重入 Linux 网络栈
 
 ---
 layout: center
