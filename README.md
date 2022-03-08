@@ -10,7 +10,7 @@ Copyright (C) 2021-2022 myl7
 
 SPDX-License-Identifier: GPL-2.0-or-later
 
-### Texts under `docs/gradpro`
+### Texts under `docs/thesis`
 
 Copyright (C) 2022 myl7
 
