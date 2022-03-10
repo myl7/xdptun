@@ -1,10 +1,41 @@
 % !TeX root = ../main.tex
 
+% Copyright (c) 2022 myl7
+% SPDX-License-Identifier: CC-BY-NC-ND-4.0
+
 \chapter{简介}
 
-\section{一级节标题}
+\section{背景}
 
-\subsection{二级节标题}
+\subsection{协议背景}
+
+\subsubsection{UDP 和 TCP}
+
+由于 UDP 协议不承诺送达和去重\cite{rfc768}、不保证稳定传输，公网 QoS 中常常会降低 UDP 流量权重而保证主要服务承载流量 TCP 流量的质量，甚至是在资源不足、硬件性能受限或是存在安全问题的情况下直接阻断 UDP 流量，进而造成了 UDP 流量常常质量不佳的情况。此情况尤其常见于廉价家庭宽带接入、跨运营商通信和跨国通信等环境下，对普通用户相关服务可达性、公司服务群及内网建设等有着较大负面影响。为了规避此情况，在过去进行技术选型时，公网通信常常选用 TCP 协议，甚至是直接选用基于 TCP 协议的 HTTP 协议（i.g. HTTP/1.1、HTTP/2），以保证服务的可达性和质量。
+
+\subsubsection{新旧上层协议}
+
+在过去基于 TCP 的 HTTP 协议中，HTTP/1.1 和 HTTP/2 是目前的主流选择。其中 HTTP/1.1 由于每次请求都会打开一个新连接，资源消耗大而交互延迟高，一般仅在考虑兼容性时选用；而 HTTP/2 则可以复用 TCP 连接，解决了新连接开销大的问题，但也遇到了队头阻塞的问题。队头阻塞体现为 TCP 拥塞控制中多个 HTTP 连接复用同一个 TCP 连接时，假如 TCP 消息队列队头的包发生了超时丢包，则此丢包会阻塞后续所有的 HTTP 连接，即使这些 HTTP 连接之间没有依赖关系。<TOREF>尽管有 BBR\cite{45646} 等项目致力于在 TCP 发生超时丢包时优化拥塞控制策略、尽快恢复原传输速率，但仍然无法彻底解决这个问题。
+
+HTTP/3 的提出便是为了解决这个问题。HTTP/3 由 Google 主导开发，其最初是在 UDP 协议上实现了能够进行稳定传输的 QUIC 协议，然后在 2018 年提出将 HTTP over QUIC 重命名为 HTTP/3<TOREF>，并于同年获得了 IETF 成员的认可<TOREF>。尽管截至目前 HTTP/3 仍是草案\cite{ietf-quic-http-34}，但浏览器 Google Chrome 和 Firefox、CDN 厂商 Cloudflare 已经部署了对于 HTTP/3 的支持。由于 HTTP/3 基于 QUIC 而 QUIC 基于 UDP，在 HTTP/3 这样的新一代上层协议中，UDP 流量质量不佳问题的影响面开始逐渐扩大。
+
+不仅有 HTTP/3，WireGuard 也是一个例子。WireGuard 是 Linux 5.6 被合并入 Linux 内核<TOREF>的、新一代 VPN 协议。WireGuard 具有全平台、高性能、易配置、支持后量子安全<TOREF>等优点，能够极大地方便公司内网建设、自建 AS 等 VPN 组网问题。WireGuard 选择了利用 UDP 协议进行节点间数据传输，从而规避了 TCP over TCP 时的性能问题，并复用现有 UDP over TCP 实现降低目前实现的复杂度。此选择同样推动了对于解决 UDP 流量质量不佳问题方法的探索。
+
+\subsubsection{UDP over TCP}
+
+为了解决 UDP 流量质量不佳问题，目前的主流方案便是利用 TCP 流量的主要性，将 UDP 流量伪装为 TCP 流量，亦即 UDP over TCP。具体实现有 GOST<TOREF> 等项目。也有一些其他方案，例如：UDP over HTTP，从而不必自行管理 TCP 连接；UDP over WebSocket，从而提高实时性并方便兼容非 TCP 的流式协议。
+
+但这些 UDP over TCP 或者是更上层协议的方案其实存在一些问题，例如：在调用操作系统接口时，协议的封装和解封装是在完整通过 Linux 内核网络栈后在用户态进行的，一方面通过 Linux 内核网络栈的过程和通用 Linux API 的限制使得应用存在性能优化空间，另一方面用户态获得的原始包无法直接复用 Linux 内核网络栈的各个工具（e.g. TC、Netfilter、IP Set 等）。
+
+本项目依然在协议上选择 UDP over TCP，但是借助 Linux 可编程内核机制 eBPF，直接提前接管 L2-L4 的协议处理，从而一方面不必实现完整的下层 TCP 协议、仅需模拟 UDP 流量为 TCP 流量实现伪装，另一方面完成封装或解封装后 Linux 内核网络栈工具的复用。
+
+\subsection{工具背景}
+
+\subsubsection{eBPF}
+
+\subsubsection{XDP 和 TC BPF}
+
+\section{方案}
 
 \subsubsection{三级节标题}
 
@@ -26,14 +57,3 @@ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
 fugiat nulla pariatur.
 Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
 deserunt mollit anim id est laborum.
-
-
-
-\section{脚注}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua.
-\footnote{Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-  nisi ut aliquip ex ea commodo consequat.
-  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-  eu fugiat nulla pariatur.}
