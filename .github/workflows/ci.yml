@@ -1,0 +1,16 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+jobs:
+  thesis-thesis:
+    runs-on: ubuntu-latest
+    container: tunathu/thuthesis-test-env
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install required packages
+        run: bash .github/workflows/install-packages.sh
+      - name: Test thesis
+        working-directory: docs/thesis/thesis
+        run: make main
