@@ -4,9 +4,9 @@ The project under the directory uses [中国科学技术大学学位论文 LaTeX
 
 ## License
 
-### Texts in `main.tex` and `chapters`
+### Texts in `chapters`
 
-Copyright (C) 2022 myl7
+Copyright (c) 2022 myl7
 
 SPDX-License-Identifier: CC-BY-NC-ND-4.0
 

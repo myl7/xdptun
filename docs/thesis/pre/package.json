@@ -10,7 +10,7 @@
     "export": "slidev export"
   },
   "author": "myl7 <myl@myl.moe> (https://myl.moe)",
-  "license": "SEE LICENSE IN ../LICENSE",
+  "license": "CC-BY-NC-ND-4.0",
   "dependencies": {
     "@slidev/cli": "^0.28.9",
     "@slidev/theme-default": "^0.21.1"

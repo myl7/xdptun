@@ -8,8 +8,8 @@ Most resource will be in Chinese, since the submission requires that.
 
 ## License
 
-Copyright (C) 2022 myl7
+Copyright (c) 2022 myl7
 
-CC BY-NC-ND 4.0 by default, unless otherwise explicitly stated
+SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/
+by default, unless otherwise explicitly stated

@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2022 myl7 -->
+<!-- SPDX-License-Identifier: CC-BY-NC-ND-4.0 -->
+
 # Startup Report
 
 The report is to make the CS School allow me to start the project as my graduation project

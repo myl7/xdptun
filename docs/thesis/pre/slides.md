@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2022 myl7 -->
+<!-- SPDX-License-Identifier: CC-BY-NC-ND-4.0 -->
+
 # 基于 XDP 的 UDP 包伪装方案
 
 UDP packet obfuscation based on XDP
