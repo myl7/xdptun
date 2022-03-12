@@ -13,70 +13,48 @@
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 #include "mem.h"
+#include "hdr.h"
 
 SEC("license")
 const char ___license[] = "GPL";
 
 SEC("xdptun_egress")
 int egress(struct __sk_buff *skb) {
-  void *data = (void *)(long)skb->data;
-  void *data_end = (void *)(long)skb->data_end;
+  void *data, *data_end;
+  struct ethhdr *eth;
+  struct iphdr *ip;
+  struct udphdr *udp;
+  struct tcphdr *tcp;
 
-  struct ethhdr *eth = data;
-  if (check_bound(eth, eth + 1, data, data_end)) {
-    return TC_ACT_OK;
-  }
+  data = data_ptr(skb->data);
+  data_end = data_ptr(skb->data_end);
+
+  CHECK_ETH_BOUND(eth, TC_ACT_OK);
   if (eth->h_proto != bpf_ntohs(ETH_P_IP)) {
     return TC_ACT_OK;
   }
 
-  struct iphdr *ip = (void *)(eth + 1);
-  if (check_bound(ip, ip + 1, data, data_end)) {
-    return TC_ACT_OK;
-  }
-  if (check_bound(ip, (void *)ip + ip->ihl * 4, data, data_end)) {
-    return TC_ACT_OK;
-  }
+  CHECK_IP_BOUND(ip, TC_ACT_OK);
   if (ip->protocol != IPPROTO_UDP) {
     return TC_ACT_OK;
   }
 
-  struct udphdr *udp = (void *)ip + ip->ihl * 4;
-  if (check_bound(udp, udp + 1, data, data_end)) {
-    return TC_ACT_OK;
-  }
-
-  __u32 udp_check = bpf_ntohs(udp->check);
-  void *udp_data = udp + 1;
+  CHECK_UDP_BOUND(udp, TC_ACT_OK);
 
 #ifdef DEBUG
   bpf_printk("egress recv");
 #endif
 
-  ip->protocol = IPPROTO_TCP;
+  __u32 udp_check = bpf_ntohs(udp->check);
+
   // 12 bytes are moved to tail to leave enough space to transform UDP header to TCP header
   bpf_skb_change_tail(skb, skb->len + 12, 0);
 
-  data = (void *)(long)skb->data;
-  data_end = (void *)(long)skb->data_end;
-
-  eth = data;
-  if (check_bound(eth, eth + 1, data, data_end)) {
-    return TC_ACT_OK;
-  }
-
-  ip = (void *)(eth + 1);
-  if (check_bound(ip, ip + 1, data, data_end)) {
-    return TC_ACT_OK;
-  }
-  if (check_bound(ip, (void *)ip + ip->ihl * 4, data, data_end)) {
-    return TC_ACT_OK;
-  }
-
-  struct tcphdr *tcp = (void *)ip + ip->ihl * 4;
-  if (check_bound(tcp, tcp + 1, data, data_end)) {
-    return TC_ACT_OK;
-  }
+  data = data_ptr(skb->data);
+  data_end = data_ptr(skb->data_end);
+  CHECK_ETH_BOUND(eth, TC_ACT_OK);
+  CHECK_IP_BOUND(ip, TC_ACT_OK);
+  CHECK_TCP_BOUND(tcp, TC_ACT_OK);
 
   __u8 buf[12];
   memcpy(buf, (void *)tcp + 4, 12);
@@ -84,28 +62,14 @@ int egress(struct __sk_buff *skb) {
   unsigned offset = (void *)ip - data + bpf_ntohs(ip->tot_len);
   bpf_skb_store_bytes(skb, offset, buf, 12, 0);
 
-  data = (void *)(long)skb->data;
-  data_end = (void *)(long)skb->data_end;
+  data = data_ptr(skb->data);
+  data_end = data_ptr(skb->data_end);
+  CHECK_ETH_BOUND(eth, TC_ACT_OK);
+  CHECK_IP_BOUND(ip, TC_ACT_OK);
+  CHECK_TCP_BOUND(tcp, TC_ACT_OK);
 
-  eth = data;
-  if (check_bound(eth, eth + 1, data, data_end)) {
-    return TC_ACT_OK;
-  }
-
-  ip = (void *)(eth + 1);
-  if (check_bound(ip, ip + 1, data, data_end)) {
-    return TC_ACT_OK;
-  }
-  if (check_bound(ip, (void *)ip + ip->ihl * 4, data, data_end)) {
-    return TC_ACT_OK;
-  }
-
-  tcp = (void *)ip + ip->ihl * 4;
-  if (check_bound(tcp, tcp + 1, data, data_end)) {
-    return TC_ACT_OK;
-  }
-
-  // Update IP header total length and header checksum
+  // Update IP header protocol, total length, header checksum
+  ip->protocol = IPPROTO_TCP;
   ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) + 12);
   __u32 ip_check = bpf_ntohs(ip->check) + IPPROTO_TCP - IPPROTO_UDP + 12;
   ip->check = bpf_htons(((ip_check & 0xffff) + (ip_check >> 16)) & 0xffff);

@@ -12,50 +12,42 @@
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 #include "mem.h"
+#include "hdr.h"
 
 SEC("license")
 const char ___license[] = "GPL";
 
 SEC("xdptun_ingress")
 int ingress(struct xdp_md *ctx) {
-  void *data = (void *)(long)ctx->data;
-  void *data_end = (void *)(long)ctx->data_end;
+  void *data, *data_end;
+  struct ethhdr *eth;
+  struct iphdr *ip;
+  struct tcphdr *tcp;
+  struct udphdr *udp;
 
-  struct ethhdr *eth = data;
-  if (check_bound(eth, eth + 1, data, data_end)) {
-    return XDP_PASS;
-  }
+  data = data_ptr(ctx->data);
+  data_end = data_ptr(ctx->data_end);
+
+  CHECK_ETH_BOUND(eth, XDP_PASS);
   if (eth->h_proto != bpf_ntohs(ETH_P_IP)) {
     return XDP_PASS;
   }
 
-  struct iphdr *ip = (void *)(eth + 1);
-  if (check_bound(ip, ip + 1, data, data_end)) {
-    return XDP_PASS;
-  }
-  if (check_bound(ip, (void *)ip + ip->ihl * 4, data, data_end)) {
-    return XDP_PASS;
-  }
+  CHECK_IP_BOUND(ip, XDP_PASS);
   if (ip->protocol != IPPROTO_TCP) {
     return XDP_PASS;
   }
 
-  struct tcphdr *tcp = (void *)ip + ip->ihl * 4;
-  if (check_bound(tcp, tcp + 1, data, data_end)) {
-    return XDP_PASS;
-  }
+  CHECK_TCP_BOUND(tcp, XDP_PASS);
   if (check_bound(tcp, (void *)tcp + tcp->doff * 4, data, data_end)) {
     return XDP_PASS;
   }
-
-  __u32 tcp_check = bpf_ntohs(tcp->check);
-  void *tcp_data = (void *)tcp + tcp->doff * 4;
 
 #ifdef DEBUG
   bpf_printk("ingress recv");
 #endif
 
-  ip->protocol = IPPROTO_UDP;
+  __u32 tcp_check = bpf_ntohs(tcp->check);
 
   __u16 ip_tot_len = bpf_ntohs(ip->tot_len);
   // 12 bytes are moved to tail to leave enough space to transform UDP header to TCP header
@@ -70,12 +62,13 @@ int ingress(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
-  // Update IP header total length and header checksum
+  // Update IP header protocol, total length, header checksum
+  ip->protocol = IPPROTO_UDP;
   ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) - 12);
   __u32 ip_check = bpf_ntohs(ip->check) + IPPROTO_UDP - IPPROTO_TCP - 12;
   ip->check = bpf_htons(((ip_check & 0xffff) + (ip_check >> 16)) & 0xffff);
 
-  struct udphdr *udp = (void *)tcp;
+  udp = (void *)tcp;
   if (check_bound(udp, udp + 1, data, data_end)) {
     return XDP_PASS;
   }
