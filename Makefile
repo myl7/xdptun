@@ -1,6 +1,9 @@
 # Copyright (C) 2021-2022 myl7
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+# Available flags
+RELEASE ?=
+
 # Basic dirs
 SRC_DIR = src
 INCLUDE_DIR = include
@@ -10,7 +13,7 @@ BUILD_DIR ?= build
 BPF_DIR = src/bpf
 BPF_FILES = $(wildcard $(BPF_DIR)/*.c)
 BPF_TARGETS = $(BPF_FILES:$(BPF_DIR)/%.c=$(BUILD_DIR)/%.o)
-BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR)$(if $(DEBUG), -g -DDEBUG,)
+BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR)$(if ! $(RELEASE), -DDEBUG,)
 
 # Executable config
 CLANG ?= clang
