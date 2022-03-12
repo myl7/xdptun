@@ -45,12 +45,15 @@ static always_inline void *data_ptr(__u32 data) {
   })
 
 #define CHECK_TCP_BOUND(tcp, ret) ___CHECK_TCP_BOUND(tcp, ret, ip, data, data_end)
-#define ___CHECK_TCP_BOUND(tcp, ret, ip, data, data_end) \
-  ({                                                     \
-    tcp = (void *)ip + ip->ihl * 4;                      \
-    if (check_bound(tcp, tcp + 1, data, data_end)) {     \
-      return ret;                                        \
-    }                                                    \
+#define ___CHECK_TCP_BOUND(tcp, ret, ip, data, data_end)                 \
+  ({                                                                     \
+    tcp = (void *)ip + ip->ihl * 4;                                      \
+    if (check_bound(tcp, tcp + 1, data, data_end)) {                     \
+      return ret;                                                        \
+    }                                                                    \
+    if (check_bound(tcp, (void *)tcp + tcp->doff * 4, data, data_end)) { \
+      return ret;                                                        \
+    }                                                                    \
   })
 
 #define CHECK_UDP_BOUND(udp, ret) ___CHECK_UDP_BOUND(udp, ret, ip, data, data_end)

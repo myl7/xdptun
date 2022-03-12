@@ -1,8 +1,11 @@
 # Copyright (c) 2021-2022 myl7
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+# Define logging level
+# 0: error, 1: info, 2: verbose, 3: debug
+LOG_LEVEL ?= 2
+
 # Basic config
-RELEASE ?=
 BUILD_DIR ?= build
 SRC_DIR = src
 INCLUDE_DIR = include
@@ -13,7 +16,7 @@ BPF_BUILD_DIR = $(BUILD_DIR)/bpf
 BPF_SRCS = $(wildcard $(BPF_SRC_DIR)/*.c)
 BPF_OBJS = $(BPF_SRCS:$(BPF_SRC_DIR)/%.c=$(BPF_BUILD_DIR)/%.o)
 BPF_DEPS = $(BPF_OBJ:%.o=%.d)
-BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR)$(if ! $(RELEASE), -DDEBUG,)
+BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR) -DLOG_LEVEL=$(LOG_LEVEL)
 
 # Executable config
 CLANG ?= clang

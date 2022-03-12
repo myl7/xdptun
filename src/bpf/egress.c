@@ -15,6 +15,7 @@
 #include "mem.h"
 #include "hdr.h"
 #include "csum.h"
+#include "log.h"
 
 SEC("license")
 const char ___license[] = "GPL";
@@ -31,20 +32,20 @@ int egress(struct __sk_buff *skb) {
   data_end = data_ptr(skb->data_end);
 
   CHECK_ETH_BOUND(eth, TC_ACT_OK);
-  if (eth->h_proto != bpf_ntohs(ETH_P_IP)) {
+  if (bpf_ntohs(eth->h_proto) != ETH_P_IP) {
+    LOG_DEBUG("L3 runs %d, passed", bpf_ntohs(eth->h_proto));
     return TC_ACT_OK;
   }
 
   CHECK_IP_BOUND(ip, TC_ACT_OK);
   if (ip->protocol != IPPROTO_UDP) {
+    LOG_VERBOSE("L4 runs %d, passed", ip->protocol);
     return TC_ACT_OK;
   }
 
   CHECK_UDP_BOUND(udp, TC_ACT_OK);
 
-#ifdef DEBUG
-  bpf_printk("egress recv");
-#endif
+  LOG_INFO("egress recv");
 
   __u32 udp_check = bpf_ntohs(udp->check);
 
@@ -77,9 +78,6 @@ int egress(struct __sk_buff *skb) {
   // Update TCP header checksum
   tcp->check = bpf_htons(csum_delta(udp_check, IPPROTO_TCP - IPPROTO_UDP + 12));
 
-#ifdef DEBUG
-  bpf_printk("egress done");
-#endif
-
+  LOG_INFO("egress done");
   return TC_ACT_OK;
 }

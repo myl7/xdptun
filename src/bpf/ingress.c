@@ -14,6 +14,7 @@
 #include "mem.h"
 #include "hdr.h"
 #include "csum.h"
+#include "log.h"
 
 SEC("license")
 const char ___license[] = "GPL";
@@ -30,23 +31,20 @@ int ingress(struct xdp_md *ctx) {
   data_end = data_ptr(ctx->data_end);
 
   CHECK_ETH_BOUND(eth, XDP_PASS);
-  if (eth->h_proto != bpf_ntohs(ETH_P_IP)) {
+  if (bpf_ntohs(eth->h_proto) != ETH_P_IP) {
+    LOG_DEBUG("L3 runs %d, passed", bpf_ntohs(eth->h_proto));
     return XDP_PASS;
   }
 
   CHECK_IP_BOUND(ip, XDP_PASS);
   if (ip->protocol != IPPROTO_TCP) {
+    LOG_VERBOSE("L4 runs %d, passed", ip->protocol);
     return XDP_PASS;
   }
 
   CHECK_TCP_BOUND(tcp, XDP_PASS);
-  if (check_bound(tcp, (void *)tcp + tcp->doff * 4, data, data_end)) {
-    return XDP_PASS;
-  }
 
-#ifdef DEBUG
-  bpf_printk("ingress recv");
-#endif
+  LOG_INFO("ingress recv");
 
   __u32 tcp_check = bpf_ntohs(tcp->check);
 
@@ -79,9 +77,6 @@ int ingress(struct xdp_md *ctx) {
   memmove((void *)tcp + 4, data_bak, 12);
   bpf_xdp_adjust_tail(ctx, -12);
 
-#ifdef DEBUG
-  bpf_printk("ingress done");
-#endif
-
+  LOG_INFO("ingress done");
   return XDP_TX;
 }
