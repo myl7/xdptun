@@ -1,36 +1,35 @@
-# Copyright (C) 2021-2022 myl7
+# Copyright (c) 2021-2022 myl7
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-# Available flags
+# Basic config
 RELEASE ?=
-
-# Basic dirs
+BUILD_DIR ?= build
 SRC_DIR = src
 INCLUDE_DIR = include
-BUILD_DIR ?= build
 
 # BPF config
-BPF_DIR = src/bpf
-BPF_FILES = $(wildcard $(BPF_DIR)/*.c)
-BPF_TARGETS = $(BPF_FILES:$(BPF_DIR)/%.c=$(BUILD_DIR)/%.o)
+BPF_SRC_DIR = $(SRC_DIR)/bpf
+BPF_BUILD_DIR = $(BUILD_DIR)/bpf
+BPF_SRCS = $(wildcard $(BPF_SRC_DIR)/*.c)
+BPF_OBJS = $(BPF_SRCS:$(BPF_SRC_DIR)/%.c=$(BPF_BUILD_DIR)/%.o)
+BPF_DEPS = $(BPF_OBJ:%.o=%.d)
 BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR)$(if ! $(RELEASE), -DDEBUG,)
 
 # Executable config
 CLANG ?= clang
 CLANG_FORMAT ?= clang-format
 
-all: mkdir $(BPF_TARGETS)
+all: mkdir $(BPF_OBJS)
 
 .PHONY: all mkdir clean format format-check
 
-$(BUILD_DIR)/ingress.o: $(BPF_DIR)/ingress.c $(INCLUDE_DIR)/mem.h
-	$(CLANG) $(BPF_FLAGS) -c $< -o $@
+-include $(BPF_DEPS)
 
-$(BUILD_DIR)/egress.o: $(BPF_DIR)/egress.c $(INCLUDE_DIR)/mem.h
-	$(CLANG) $(BPF_FLAGS) -c $< -o $@
+$(BPF_BUILD_DIR)/%.o: $(BPF_SRC_DIR)/%.c
+	$(CLANG) $(BPF_FLAGS) -MMD -c $< -o $@
 
 mkdir:
-	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BPF_BUILD_DIR)
 
 clean:
 	-rm -rf $(BUILD_DIR)
