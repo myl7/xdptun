@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install required packages
-        run: bash .github/workflows/install-packages.sh
+        run: bash docs/thesis/thesis/scripts/install-packages.sh
       - name: Test thesis
         working-directory: docs/thesis/thesis
         run: make main
