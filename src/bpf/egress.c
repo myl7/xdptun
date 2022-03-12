@@ -14,6 +14,7 @@
 #include <bpf/bpf_endian.h>
 #include "mem.h"
 #include "hdr.h"
+#include "csum.h"
 
 SEC("license")
 const char ___license[] = "GPL";
@@ -71,12 +72,10 @@ int egress(struct __sk_buff *skb) {
   // Update IP header protocol, total length, header checksum
   ip->protocol = IPPROTO_TCP;
   ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) + 12);
-  __u32 ip_check = bpf_ntohs(ip->check) + IPPROTO_TCP - IPPROTO_UDP + 12;
-  ip->check = bpf_htons(((ip_check & 0xffff) + (ip_check >> 16)) & 0xffff);
+  ip->check = bpf_htons(csum_delta(bpf_ntohs(ip->check), IPPROTO_TCP - IPPROTO_UDP + 12));
 
   // Update TCP header checksum
-  __u32 tcp_check = udp_check + IPPROTO_TCP - IPPROTO_UDP + 12;
-  tcp->check = bpf_htons(((tcp_check & 0xffff) + (tcp_check >> 16)) & 0xffff);
+  tcp->check = bpf_htons(csum_delta(udp_check, IPPROTO_TCP - IPPROTO_UDP + 12));
 
 #ifdef DEBUG
   bpf_printk("egress done");

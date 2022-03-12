@@ -13,6 +13,7 @@
 #include <bpf/bpf_endian.h>
 #include "mem.h"
 #include "hdr.h"
+#include "csum.h"
 
 SEC("license")
 const char ___license[] = "GPL";
@@ -65,8 +66,7 @@ int ingress(struct xdp_md *ctx) {
   // Update IP header protocol, total length, header checksum
   ip->protocol = IPPROTO_UDP;
   ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) - 12);
-  __u32 ip_check = bpf_ntohs(ip->check) + IPPROTO_UDP - IPPROTO_TCP - 12;
-  ip->check = bpf_htons(((ip_check & 0xffff) + (ip_check >> 16)) & 0xffff);
+  ip->check = bpf_htons(csum_delta(bpf_ntohs(ip->check), IPPROTO_UDP - IPPROTO_TCP - 12));
 
   udp = (void *)tcp;
   if (check_bound(udp, udp + 1, data, data_end)) {
@@ -74,8 +74,7 @@ int ingress(struct xdp_md *ctx) {
   }
 
   // Update UDP header checksum
-  __u32 udp_check = tcp_check + IPPROTO_UDP - IPPROTO_TCP - 12;
-  udp->check = bpf_htons(((udp_check & 0xffff) + (udp_check >> 16)) & 0xffff);
+  udp->check = bpf_htons(csum_delta(tcp_check, IPPROTO_UDP - IPPROTO_TCP - 12));
 
   memmove((void *)tcp + 4, data_bak, 12);
   bpf_xdp_adjust_tail(ctx, -12);
