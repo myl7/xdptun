@@ -46,6 +46,7 @@ int egress(struct __sk_buff *skb) {
     return TC_ACT_OK;
   }
 
+  __u32 udp_check = bpf_ntohs(udp->check);
   void *udp_data = udp + 1;
 
 #ifdef DEBUG
@@ -82,6 +83,36 @@ int egress(struct __sk_buff *skb) {
   memset((void *)tcp + 4, 0, 12);
   unsigned offset = (void *)ip - data + bpf_ntohs(ip->tot_len);
   bpf_skb_store_bytes(skb, offset, buf, 12, 0);
+
+  data = (void *)(long)skb->data;
+  data_end = (void *)(long)skb->data_end;
+
+  eth = data;
+  if (check_bound(eth, eth + 1, data, data_end)) {
+    return TC_ACT_OK;
+  }
+
+  ip = (void *)(eth + 1);
+  if (check_bound(ip, ip + 1, data, data_end)) {
+    return TC_ACT_OK;
+  }
+  if (check_bound(ip, (void *)ip + ip->ihl * 4, data, data_end)) {
+    return TC_ACT_OK;
+  }
+
+  tcp = (void *)ip + ip->ihl * 4;
+  if (check_bound(tcp, tcp + 1, data, data_end)) {
+    return TC_ACT_OK;
+  }
+
+  // Update IP header total length and header checksum
+  ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) + 12);
+  __u32 ip_check = bpf_ntohs(ip->check) + IPPROTO_TCP - IPPROTO_UDP + 12;
+  ip->check = bpf_htons(((ip_check & 0xffff) + (ip_check >> 16)) & 0xffff);
+
+  // Update TCP header checksum
+  __u32 tcp_check = udp_check + IPPROTO_TCP - IPPROTO_UDP + 12;
+  tcp->check = bpf_htons(((tcp_check & 0xffff) + (tcp_check >> 16)) & 0xffff);
 
 #ifdef DEBUG
   bpf_printk("egress done");

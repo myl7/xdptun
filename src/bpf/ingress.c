@@ -48,6 +48,7 @@ int ingress(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
+  __u32 tcp_check = bpf_ntohs(tcp->check);
   void *tcp_data = (void *)tcp + tcp->doff * 4;
 
 #ifdef DEBUG
@@ -68,6 +69,20 @@ int ingress(struct xdp_md *ctx) {
   if (check_bound(data_bak, data_bak + 12, data, data_end)) {
     return XDP_PASS;
   }
+
+  // Update IP header total length and header checksum
+  ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) - 12);
+  __u32 ip_check = bpf_ntohs(ip->check) + IPPROTO_UDP - IPPROTO_TCP - 12;
+  ip->check = bpf_htons(((ip_check & 0xffff) + (ip_check >> 16)) & 0xffff);
+
+  struct udphdr *udp = (void *)tcp;
+  if (check_bound(udp, udp + 1, data, data_end)) {
+    return XDP_PASS;
+  }
+
+  // Update UDP header checksum
+  __u32 udp_check = tcp_check + IPPROTO_UDP - IPPROTO_TCP - 12;
+  udp->check = bpf_htons(((udp_check & 0xffff) + (udp_check >> 16)) & 0xffff);
 
   memmove((void *)tcp + 4, data_bak, 12);
   bpf_xdp_adjust_tail(ctx, -12);
