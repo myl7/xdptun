@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <linux/bpf.h>
+#include <bpf/bpf_helpers.h>
 #include "utils.h"
 
 static always_inline int check_bound(void *start, void *end, void *data, void *data_end) {

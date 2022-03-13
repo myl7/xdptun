@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <linux/bpf.h>
+#include <bpf/bpf_helpers.h>
 #include "utils.h"
 
 static always_inline __u16 csum_delta(__u32 old_sum, __u32 delta) {

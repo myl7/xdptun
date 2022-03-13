@@ -4,6 +4,7 @@
 # Define logging level
 # 0: error, 1: info, 2: verbose, 3: debug
 LOG_LEVEL ?= 2
+LOG_USE_MAP ?=
 
 # Basic config
 BUILD_DIR ?= build
@@ -16,7 +17,7 @@ BPF_BUILD_DIR = $(BUILD_DIR)/bpf
 BPF_SRCS = $(wildcard $(BPF_SRC_DIR)/*.c)
 BPF_OBJS = $(BPF_SRCS:$(BPF_SRC_DIR)/%.c=$(BPF_BUILD_DIR)/%.o)
 BPF_DEPS = $(BPF_OBJ:%.o=%.d)
-BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR) -DLOG_LEVEL=$(LOG_LEVEL)
+BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR) -DLOG_LEVEL=$(LOG_LEVEL)$(if $(LOG_USE_MAP), -DLOG_USE_MAP)
 
 # Executable config
 CLANG ?= clang

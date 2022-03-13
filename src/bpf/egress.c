@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #define BPF_NO_GLOBAL_DATA
+#define LOG_MAP_NAME egress_log_map
 
 #include <linux/bpf.h>
 #include <linux/pkt_cls.h>
@@ -17,11 +18,12 @@
 #include "csum.h"
 #include "log.h"
 
-SEC("license")
-const char ___license[] = "GPL";
+const char ___license[] SEC("license") = "GPL";
 
-SEC("xdptun_egress")
-int egress(struct __sk_buff *skb) {
+SETUP_LOG_MAP(egress_log_map);
+
+SEC("egress")
+int egress_f(struct __sk_buff *skb) {
   void *data, *data_end;
   struct ethhdr *eth;
   struct iphdr *ip;

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #define BPF_NO_GLOBAL_DATA
+#define LOG_MAP_NAME ingress_log_map
 
 #include <linux/bpf.h>
 #include <linux/if_ether.h>
@@ -16,11 +17,12 @@
 #include "csum.h"
 #include "log.h"
 
-SEC("license")
-const char ___license[] = "GPL";
+const char ___license[] SEC("license") = "GPL";
 
-SEC("xdptun_ingress")
-int ingress(struct xdp_md *ctx) {
+SETUP_LOG_MAP(ingress_log_map);
+
+SEC("ingress")
+int ingress_f(struct xdp_md *ctx) {
   void *data, *data_end;
   struct ethhdr *eth;
   struct iphdr *ip;
