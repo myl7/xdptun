@@ -140,11 +140,11 @@ flowchart LR
   end
 ```
 
-`bpf_skb_change_tail` 扩大 SKB tail 空间以在包末尾添加 12 bytes
+`bpf_skb_change_tail` 扩大 SKB tail 空间以在包末尾添加 12 bytes 并同时 pad 原数据部分至至少 12 bytes（防止 overlapping）
 
 此调用后所有 L2-L4 header pointer invalid，需要重新进行 check
 
-check 过程中，利用 L3 IP header `total length` field 正向获取到原包末尾指针以访问新添加的 12 bytes 以满足 verifier 要求：verifier 不允许从 `data_end` 开始移动指针，因为合法的指针范围是 `[data, data_end)` 不含 `data_end`
+check 过程中，利用 L3 IP header `total length` field 正向获取到原包末尾指针以访问新添加的空间的后 12 bytes 同时满足 verifier 要求：verifier 不允许从 `data_end` 开始移动指针，因为合法的指针范围是 `[data, data_end)` 不含 `data_end`
 
 ---
 
@@ -160,7 +160,7 @@ flowchart LR
   end
 ```
 
-移动 L4 UDP header 后 data 部分前 12 bytes 到包末尾新增的 12 bytes，伪造 TCP header：
+移动 L4 UDP header 后 data 部分前 12 bytes 到包末尾新增空间的后 12 bytes，伪造 TCP header：
 
 ```
  0      7 8     15 16    23 24    31
@@ -239,25 +239,11 @@ flowchart LR
   end
 ```
 
-更新 L3 IP header `protocol`、`total length`、`header checksum` 等 field 后 `return TC_ACT_OK` 结束：
+更新 L3 IP header `protocol`、`total length`、`header checksum`
 
-```
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|Version|  IHL  |Type of Service|          Total Length         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Identification        |Flags|      Fragment Offset    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Time to Live |    Protocol   |         Header Checksum       |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Source Address                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Destination Address                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Options                    |    Padding    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-```
+更新 L4 TCP header `data offset`、`checksum`
+
+最后 `return TC_ACT_OK` 结束：
 
 <style>
 pre {
@@ -343,25 +329,9 @@ flowchart LR
   end
 ```
 
-同样地更新 L3 IP header `protocol`、`total length`、`header checksum` 等 field：
+仅更新 L3 IP header `protocol`、`total length`、`header checksum`
 
-```
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|Version|  IHL  |Type of Service|          Total Length         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Identification        |Flags|      Fragment Offset    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Time to Live |    Protocol   |         Header Checksum       |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Source Address                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Destination Address                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Options                    |    Padding    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-```
+L4 TCP header 直接丢弃，L4 UDP header 并未修改保留即可
 
 <style>
 pre {
@@ -384,9 +354,9 @@ flowchart LR
   end
 ```
 
-`bpf_xdp_adjust_tail` 收缩 tail 空间以移除包末尾的 12 bytes，此后所有 L2-L4 header pointer invalid
+`bpf_xdp_adjust_tail` 收缩 tail 空间以移除包末尾的 12 bytes 同时移除 pad 的空间
 
-最后 `return XDP_TX` 让包重入 Linux 网络栈
+最后 `return XDP_PASS` 让包进入 Linux 网络栈
 
 ---
 layout: center
