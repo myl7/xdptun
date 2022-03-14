@@ -49,8 +49,11 @@ int egress_f(struct __sk_buff *skb) {
 
   __u32 udp_check = bpf_ntohs(udp->check);
 
+  int pad_diff = 12 - (int)(bpf_ntohs(udp->len) - 8);
+  __u8 pad_alloc = pad_diff > 0 ? pad_diff : 0;
+
   // 12 bytes are moved to tail to leave enough space to transform UDP header to TCP header
-  bpf_skb_change_tail(skb, skb->len + 12, 0);
+  bpf_skb_change_tail(skb, skb->len + 12 + pad_alloc, 0);
 
   data = data_ptr(skb->data);
   data_end = data_ptr(skb->data_end);
@@ -58,10 +61,15 @@ int egress_f(struct __sk_buff *skb) {
   CHECK_IP_BOUND(ip, TC_ACT_OK);
   CHECK_TCP_BOUND(tcp, TC_ACT_OK);
 
+  udp = (void *)tcp;
+  if (check_bound(udp, udp + 1, data, data_end)) {
+    return TC_ACT_OK;
+  }
+
   __u8 buf[12];
-  memcpy(buf, (void *)tcp + 4, 12);
-  memset((void *)tcp + 4, 0, 12);
-  unsigned offset = (void *)ip - data + bpf_ntohs(ip->tot_len);
+  memcpy(buf, udp + 1, 12);
+  memset(udp + 1, 0, 12);
+  unsigned offset = (void *)ip - data + bpf_ntohs(ip->tot_len) + pad_alloc;
   bpf_skb_store_bytes(skb, offset, buf, 12, 0);
 
   data = data_ptr(skb->data);
@@ -73,11 +81,11 @@ int egress_f(struct __sk_buff *skb) {
   // Update IP header protocol, total length, header checksum
   ip->protocol = IPPROTO_TCP;
   ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) + 12);
-  ip->check = bpf_htons(csum_delta(bpf_ntohs(ip->check), IPPROTO_TCP - IPPROTO_UDP + 12));
+  ip->check = bpf_htons(csum_delta(bpf_ntohs(ip->check), IPPROTO_TCP - IPPROTO_UDP + 12 + pad_alloc));
 
   // Update TCP header data offset, checksum
   tcp->doff = 5;
-  tcp->check = bpf_htons(csum_delta(udp_check, IPPROTO_TCP - IPPROTO_UDP + 12 + 5));
+  tcp->check = bpf_htons(csum_delta(udp_check, IPPROTO_TCP - IPPROTO_UDP + 12 + pad_alloc + 5));
 
   LOG_INFO("egress done");
   return TC_ACT_OK;
