@@ -74,7 +74,7 @@ int ingress_f(struct xdp_md *ctx) {
   }
 
   // Update UDP header checksum
-  udp->check = bpf_htons(csum_delta(tcp_check, IPPROTO_UDP - IPPROTO_TCP - 12));
+  udp->check = bpf_htons(csum_delta(tcp_check, IPPROTO_UDP - IPPROTO_TCP - 12 - 5));
 
   memmove((void *)tcp + 4, data_bak, 12);
   bpf_xdp_adjust_tail(ctx, -12);

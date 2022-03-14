@@ -77,8 +77,9 @@ int egress_f(struct __sk_buff *skb) {
   ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) + 12);
   ip->check = bpf_htons(csum_delta(bpf_ntohs(ip->check), IPPROTO_TCP - IPPROTO_UDP + 12));
 
-  // Update TCP header checksum
-  tcp->check = bpf_htons(csum_delta(udp_check, IPPROTO_TCP - IPPROTO_UDP + 12));
+  // Update TCP header data offset, checksum
+  tcp->doff = 5;
+  tcp->check = bpf_htons(csum_delta(udp_check, IPPROTO_TCP - IPPROTO_UDP + 12 + 5));
 
   LOG_INFO("egress done");
   return TC_ACT_OK;
