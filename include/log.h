@@ -12,8 +12,14 @@
 #ifndef LOG_LEVEL
 #define LOG_LEVEL LOG_LEVEL_DEBUG
 #endif
-#ifndef LOG_MSG_MAX_SIZE
-#define LOG_MSG_MAX_SIZE 255
+#ifndef LOG_MSG_HDR_MAXSIZE
+#define LOG_MSG_HDR_MAXSIZE 10
+#endif
+#ifndef LOG_MSG_BODY_MAXSIZE
+#define LOG_MSG_BODY_MAXSIZE 50
+#endif
+#ifndef LOG_MSG_MAXSIZE
+#define LOG_MSG_MAXSIZE (LOG_MSG_HDR_MAXSIZE + LOG_MSG_BODY_MAXSIZE)
 #endif
 #ifndef LOG_MAP_NAME
 #define LOG_MAP_NAME log_map
@@ -38,7 +44,7 @@
 
 #define LOG_TO_MAP(s, args...)                              \
   ({                                                        \
-    char out[LOG_MSG_MAX_SIZE];                             \
+    BPF_PRINTK_FMT_MOD char out[LOG_MSG_MAXSIZE];                             \
     __u64 n = BPF_SNPRINTF(out, sizeof(out), s, ##args);    \
     bpf_perf_event_output(NULL, &LOG_MAP_NAME, 0, &out, n); \
   })
