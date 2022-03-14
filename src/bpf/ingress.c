@@ -34,21 +34,17 @@ int ingress_f(struct xdp_md *ctx) {
 
   CHECK_ETH_BOUND(eth, XDP_PASS);
   if (bpf_ntohs(eth->h_proto) != ETH_P_IP) {
-    LOG_DEBUG("L3 runs %d, passed", bpf_ntohs(eth->h_proto));
     return XDP_PASS;
   }
 
   CHECK_IP_BOUND(ip, XDP_PASS);
   if (ip->protocol != IPPROTO_TCP) {
-    LOG_VERBOSE("L4 runs %d, passed", ip->protocol);
     return XDP_PASS;
   }
 
   CHECK_TCP_BOUND(tcp, XDP_PASS);
 
   LOG_INFO("ingress recv");
-
-  __u32 tcp_check = bpf_ntohs(tcp->check);
 
   __u16 ip_tot_len = bpf_ntohs(ip->tot_len);
   // 12 bytes are moved to tail to leave enough space to transform UDP header to TCP header

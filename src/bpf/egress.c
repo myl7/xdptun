@@ -35,13 +35,11 @@ int egress_f(struct __sk_buff *skb) {
 
   CHECK_ETH_BOUND(eth, TC_ACT_OK);
   if (bpf_ntohs(eth->h_proto) != ETH_P_IP) {
-    LOG_DEBUG("L3 runs %d, passed", bpf_ntohs(eth->h_proto));
     return TC_ACT_OK;
   }
 
   CHECK_IP_BOUND(ip, TC_ACT_OK);
   if (ip->protocol != IPPROTO_UDP) {
-    LOG_VERBOSE("L4 runs %d, passed", ip->protocol);
     return TC_ACT_OK;
   }
 

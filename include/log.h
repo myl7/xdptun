@@ -7,11 +7,10 @@
 
 #define LOG_LEVEL_ERROR 0
 #define LOG_LEVEL_INFO 1
-#define LOG_LEVEL_VERBOSE 2
-#define LOG_LEVEL_DEBUG 3
+#define LOG_LEVEL_DEBUG 2
 
 #ifndef LOG_LEVEL
-#define LOG_LEVEL LOG_LEVEL_VERBOSE
+#define LOG_LEVEL LOG_LEVEL_DEBUG
 #endif
 #ifndef LOG_MSG_MAX_SIZE
 #define LOG_MSG_MAX_SIZE 255
@@ -62,16 +61,6 @@
 #endif
 #else
 #define LOG_INFO(s, args...)
-#endif
-
-#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
-#ifdef LOG_USE_MAP
-#define LOG_VERBOSE(s, args...) LOG_TO_MAP("VERBOSE: " s, ##args)
-#else
-#define LOG_VERBOSE(s, args...) bpf_printk("VERBOSE: " s, ##args)
-#endif
-#else
-#define LOG_VERBOSE(s, args...)
 #endif
 
 #if LOG_LEVEL >= LOG_LEVEL_DEBUG

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Define logging level
-# 0: error, 1: info, 2: verbose, 3: debug
+# 0: error, 1: info, 2: debug
 LOG_LEVEL ?= 2
 LOG_USE_MAP ?=
 
