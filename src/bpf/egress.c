@@ -59,7 +59,11 @@ int egress_f(struct __sk_buff *skb) {
   __u8 pad_alloc = pad_diff > 0 ? pad_diff : 0;
 
   // 12 bytes are moved to tail to leave enough space to transform UDP header to TCP header
-  bpf_skb_change_tail(skb, skb->len + 12 + pad_alloc, 0);
+  long res = bpf_skb_change_tail(skb, skb->len + 12 + pad_alloc, 0);
+  if (res < 0) {
+    LOG_ERROR("bpf_skb_change_tail failed with %ld", res);
+    return TC_ACT_OK;
+  }
 
   data = data_ptr(skb->data);
   data_end = data_ptr(skb->data_end);
@@ -76,7 +80,11 @@ int egress_f(struct __sk_buff *skb) {
   memcpy(buf, udp + 1, 12);
   memset(udp + 1, 0, 12);
   unsigned offset = (void *)ip - data + bpf_ntohs(ip->tot_len) + pad_alloc;
-  bpf_skb_store_bytes(skb, offset, buf, 12, 0);
+  res = bpf_skb_store_bytes(skb, offset, buf, 12, 0);
+  if (res < 0) {
+    LOG_ERROR("bpf_skb_store_bytes failed with %ld", res);
+    return TC_ACT_OK;
+  }
 
   data = data_ptr(skb->data);
   data_end = data_ptr(skb->data_end);

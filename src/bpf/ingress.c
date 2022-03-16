@@ -87,7 +87,12 @@ int ingress_f(struct xdp_md *ctx) {
   }
 
   memmove((void *)tcp + 8, data_bak, 12);
-  bpf_xdp_adjust_tail(ctx, -12 - pad_alloc);
+
+  long res = bpf_xdp_adjust_tail(ctx, -12 - (int)pad_alloc);
+  if (res != 0) {
+    LOG_ERROR("bpf_xdp_adjust_tail failed with %ld", res);
+    return XDP_PASS;
+  }
 
   LOG_INFO("ingress done");
   return XDP_PASS;
