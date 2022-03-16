@@ -45,6 +45,12 @@ int egress_f(struct __sk_buff *skb) {
 
   CHECK_UDP_BOUND(udp, TC_ACT_OK);
 
+#ifdef FILTER_PORT
+  if (bpf_ntohs(udp->dest) != FILTER_PORT) {
+    return TC_ACT_OK;
+  }
+#endif
+
   LOG_INFO("egress recv");
 
   __u32 udp_check = bpf_ntohs(udp->check);

@@ -47,6 +47,12 @@ int ingress_f(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
+#ifdef FILTER_PORT
+  if (bpf_ntohs(tcp->dest) != FILTER_PORT) {
+    return XDP_PASS;
+  }
+#endif
+
   LOG_INFO("ingress recv");
 
   udp = (void *)tcp;
