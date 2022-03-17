@@ -79,7 +79,7 @@ int ingress_f(struct xdp_md *ctx) {
   // Update IP header protocol, total length, header checksum
   ip->protocol = IPPROTO_UDP;
   ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) - 12 - pad_alloc);
-  ip->check = bpf_htons(csum_delta(bpf_ntohs(ip->check), IPPROTO_UDP - IPPROTO_TCP - 12 - pad_alloc));
+  ip->check = bpf_htons(csum_delta(bpf_ntohs(ip->check), IPPROTO_UDP - IPPROTO_TCP - 12 - (int)pad_alloc));
 
   udp = (void *)tcp;
   if (check_bound(udp, udp + 1, data, data_end)) {
