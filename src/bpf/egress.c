@@ -3,6 +3,7 @@
 
 #define BPF_NO_GLOBAL_DATA
 #define LOG_MAP_NAME egress_log_map
+#define LOG_CTX_NAME skb
 
 #include <linux/bpf.h>
 #include <linux/pkt_cls.h>

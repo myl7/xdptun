@@ -12,41 +12,36 @@
 #ifndef LOG_LEVEL
 #define LOG_LEVEL LOG_LEVEL_DEBUG
 #endif
-#ifndef LOG_MSG_HDR_MAXSIZE
-#define LOG_MSG_HDR_MAXSIZE 10
-#endif
 #ifndef LOG_MSG_BODY_MAXSIZE
 #define LOG_MSG_BODY_MAXSIZE 50
-#endif
-#ifndef LOG_MSG_MAXSIZE
-#define LOG_MSG_MAXSIZE (LOG_MSG_HDR_MAXSIZE + LOG_MSG_BODY_MAXSIZE)
 #endif
 #ifndef LOG_MAP_NAME
 #define LOG_MAP_NAME log_map
 #endif
+#ifndef LOG_CTX_NAME
+#define LOG_CTX_NAME ctx
+#endif
+
+#define LOG_MSG_HDR_MAXSIZE 10
+#define LOG_MSG_MAXSIZE (LOG_MSG_HDR_MAXSIZE + LOG_MSG_BODY_MAXSIZE)
 
 #ifdef LOG_USE_MAP
-#define SETUP_LOG_MAP(name)                \
-  struct {                                 \
-    __u32 type;                            \
-    __u32 max_entries;                     \
-    __u32 key_size;                        \
-    __u32 value_size;                      \
-  } name SEC(".maps") = {                  \
-    .type = BPF_MAP_TYPE_PERF_EVENT_ARRAY, \
-    .max_entries = 2,                      \
-    .key_size = sizeof(int),               \
-    .value_size = sizeof(__u32),           \
-  }
+#define SETUP_LOG_MAP(name)                      \
+  struct {                                       \
+    __uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY); \
+    __uint(key_size, sizeof(int));               \
+    __uint(value_size, sizeof(__u32));           \
+    __uint(max_entries, 1);                      \
+  } name SEC(".maps");
 #else
 #define SETUP_LOG_MAP(name)
 #endif
 
-#define LOG_TO_MAP(s, args...)                              \
-  ({                                                        \
-    BPF_PRINTK_FMT_MOD char out[LOG_MSG_MAXSIZE];                             \
-    __u64 n = BPF_SNPRINTF(out, sizeof(out), s, ##args);    \
-    bpf_perf_event_output(NULL, &LOG_MAP_NAME, 0, &out, n); \
+#define LOG_TO_MAP(s, args...)                                      \
+  ({                                                                \
+    BPF_PRINTK_FMT_MOD char out[LOG_MSG_MAXSIZE];                   \
+    __u64 n = BPF_SNPRINTF(out, sizeof(out), s, ##args);            \
+    bpf_perf_event_output(LOG_CTX_NAME, &LOG_MAP_NAME, 0, &out, n); \
   })
 
 #if LOG_LEVEL >= LOG_LEVEL_ERROR
