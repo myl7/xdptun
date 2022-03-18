@@ -54,8 +54,6 @@ int egress_f(struct __sk_buff *skb) {
 
   LOG_INFO("egress recv");
 
-  __u32 udp_check = bpf_ntohs(udp->check);
-
   int pad_diff = 12 - (int)(bpf_ntohs(udp->len) - 8);
   __u8 pad_alloc = pad_diff > 0 ? pad_diff : 0;
 
@@ -92,15 +90,18 @@ int egress_f(struct __sk_buff *skb) {
   CHECK_ETH_BOUND(eth, TC_ACT_OK);
   CHECK_IP_BOUND(ip, TC_ACT_OK);
   CHECK_TCP_BOUND(tcp, TC_ACT_OK);
+  CHECK_UDP_BOUND(udp, TC_ACT_OK);
 
   // Update IP header protocol, total length, header checksum
   ip->protocol = IPPROTO_TCP;
   ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) + 12 + pad_alloc);
   ip->check = bpf_htons(csum_delta(bpf_ntohs(ip->check), IPPROTO_TCP - IPPROTO_UDP + 12 + (int)pad_alloc));
 
-  // Update TCP header data offset, checksum
+  // Update TCP header data offset
   tcp->doff = 5;
-  tcp->check = bpf_htons(csum_delta(udp_check, IPPROTO_TCP - IPPROTO_UDP + 12 + (int)pad_alloc + 5));
+
+  // Reset UDP checksum since current value is useless when L4 checksum is offloaded
+  udp->check = 0;
 
   LOG_INFO("egress done");
   return TC_ACT_OK;

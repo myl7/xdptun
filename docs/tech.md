@@ -111,3 +111,11 @@ The default value (Or maybe the unexpected value wrongly/deliberately set by the
 To temporarily fix it, we comment the check, and after that everything is fine.
 
 [^5]: See [conversation of [PATCH RFC v2 29/33] xdp: allow bpf_xdp_adjust_tail() to grow packet size](https://www.spinics.net/lists/netdev/msg643967.html)
+
+## Checksum Offload
+
+See [Checksum Offloads of linux docs](https://www.kernel.org/doc/html/v5.16/networking/checksum-offloads.html):
+
+> This interface only allows a single checksum to be offloaded. Where encapsulation is used, the packet may have multiple checksum fields in different header layers, and the rest will have to be handled by another mechanism such as LCO or RCO.
+
+> No offloading of the IP header checksum is performed; it is always done in software. This is OK because when we build the IP header, we obviously have it in cache, so summing it isn’t expensive. It’s also rather short.
