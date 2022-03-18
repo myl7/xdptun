@@ -54,4 +54,4 @@
 | HTTP over WireGuard             | 9.64MiB/s     | 1 core full, others all about 40%             |
 | HTTP over WireGuard over xdptun | 9.20MiB/s     | 1 core full, others all about 40%             |
 
-On pi CPU workload caused by WireGuard should be the bottleneck, and there is no significant affect from xdptun
+On pi CPU single core workload caused by WireGuard should be the bottleneck, and there is no significant affect from xdptun
