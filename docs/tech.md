@@ -25,7 +25,7 @@ To aviod confusing anyone, here `alias BPF = eBPF`
 })
 ```
 
-Since `BPF_NO_GLOBAL_DATA` has no default value (not defined by default), and current eBPF has no BSS or static section[^1] (which means no `static`), to use `bpf_printk`, a `#define BPF_NO_GLOBAL_DATA` is required before `#include <bpf/bpf_helpers.h>`
+Since `BPF_NO_GLOBAL_DATA` has no default value (not defined by default), and current eBPF has no BSS or static section[^1] (which means no `static`), to use `bpf_printk`, a `#define BPF_NO_GLOBAL_DATA` is required before `#include <bpf/bpf_helpers.h>`, otherwise the BPF verifier will complain.
 
 [^1]: See [BPF and XDP Reference Guide of cilium docs](https://docs.cilium.io/en/v1.11/bpf/) and paper [Fast Packet Processing with eBPF and XDP: Concepts, Code, Challenges, and Applications](https://doi.org/10.1145/3371038)
 
@@ -107,10 +107,11 @@ if (unlikely(xdp->frame_sz > PAGE_SIZE)) {
 }
 ```
 
-The default value (Or maybe the unexpected value wrongly/deliberately set by the NIC card driver? But the author says the check should be unnecessary if all NIC card driver correctly set the `frame_sz` field[^5]) is over 30000 and bigger than `PAGE_SIZE` which is 4096, causing the check failed and `bpf_xdp_adjust_tail` always return `-EINVAL` = `-22`.
-To temporarily fix it, we comment the check, and after that everything is fine.
+The default value (Or maybe the unexpected value wrongly/deliberately set by the NIC card driver? But the author says the check should be unnecessary if all NIC card driver correctly set the `frame_sz` field[^5]) is over 30000 and bigger than `PAGE_SIZE` which is 4096, causing the check failed and `bpf_xdp_adjust_tail` always returns `-EINVAL` = `-22`.
+To temporarily fix it, we comment the check and recompiled the kernel[^6], and after that everything is fine.
 
 [^5]: See [conversation of [PATCH RFC v2 29/33] xdp: allow bpf_xdp_adjust_tail() to grow packet size](https://www.spinics.net/lists/netdev/msg643967.html)
+[^6]: See [The Linux kernel of Raspberry Pi Documentation](https://www.raspberrypi.com/documentation/computers/linux_kernel.html) to get detailed steps to recompile the kernel
 
 ## Checksum Offload
 
@@ -119,3 +120,8 @@ See [Checksum Offloads of linux docs](https://www.kernel.org/doc/html/v5.16/netw
 > This interface only allows a single checksum to be offloaded. Where encapsulation is used, the packet may have multiple checksum fields in different header layers, and the rest will have to be handled by another mechanism such as LCO or RCO.
 
 > No offloading of the IP header checksum is performed; it is always done in software. This is OK because when we build the IP header, we obviously have it in cache, so summing it isn’t expensive. It’s also rather short.
+
+## `iproute` BPF verifier complains `Error fetching program/map!` only and show no other things
+
+According to [the Stack Overflow answer](https://stackoverflow.com/questions/64861121/ebpf-program-load-fails-without-verifier-log), it should be a bug of `iproute`.
+I meet it only on Arch Linux and on Raspberry Pi OS (64-bit) the detailed error info is finely output.
