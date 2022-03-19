@@ -23,6 +23,10 @@ async def hello(request):
     return PlainTextResponse("hello")
 
 
+async def test(request):
+    return FileResponse(os.path.join(os.getenv("TEST_DIR"), "test"))
+
+
 async def echo(request):
     """
     HTTP echo endpoint.
@@ -85,11 +89,6 @@ async def wt(scope: Scope, receive: Receive, send: Send) -> None:
                     "type": "webtransport.stream.send",
                 }
             )
-
-
-async def test(scope: Scope, receive: Receive, send: Send):
-    response = FileResponse(os.path.join(os.getenv("TEST_DIR"), "test"))
-    await response(scope, receive, send)
 
 
 starlette = Starlette(
