@@ -62,3 +62,12 @@ Though WireGuard is known as lightweight VPN, for Raspberry Pi 3 Model B+ it is 
 CPU is the bottleneck on some degree so we can not figure out the exact negative affect on throughput of xdptun so far.
 We can in fact assert that xdptun increases CPU workload, but that is expected, and we can not even tell how much CPU workload is added exactly since in the instance HTTP over WireGuard over xdptun, CPU workload reaches device limit.
 One good result is that even in the CPU-bottleneck situation, xdptun only causes about 10% throughput decreasing, which should be acceptable.
+
+## HTTP/3 (HTTP over QUIC) over xdptun
+
+### Environments
+
+- Hostname: lenovo same as above
+- Hostname: pi same as above
+- Network: Same as above
+- Test scripts: [`test/h3`](/test/h3)
