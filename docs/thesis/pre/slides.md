@@ -519,6 +519,17 @@ HTTP/3 over xdptun
 - aioquic example 实现有性能问题，仅能达到约 600KB/s 且 CPU 占用不高
 
 ---
+
+# 附录
+
+项目信息
+
+GitHub Repo：[myl7/xdptun](https://github.com/myl7/xdptun)
+
+- Code SPDX-License-Identifier: GPL-2.0-or-later
+- Paper & Pre SPDX-License-Identifier: CC-BY-NC-ND-4.0
+
+---
 layout: center
 ---
 
