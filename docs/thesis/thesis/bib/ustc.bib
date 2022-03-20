@@ -58,3 +58,97 @@
   day         = 2,
   abstract    = {The QUIC transport protocol has several features that are desirable in a transport for HTTP, such as stream multiplexing, per-stream flow control, and low-latency connection establishment. This document describes a mapping of HTTP semantics over QUIC. This document also identifies HTTP/2 features that are subsumed by QUIC, and describes how HTTP/2 extensions can be ported to HTTP/3. DO NOT DEPLOY THIS VERSION OF HTTP DO NOT DEPLOY THIS VERSION OF HTTP/3 UNTIL IT IS IN AN RFC. This version is still a work in progress. For trial deployments, please use earlier versions. Note to Readers Discussion of this draft takes place on the QUIC working group mailing list (quic@ietf.org), which is archived at https://mailarchive.ietf.org/arch/search/?email\_list=quic. Working Group information can be found at https://github.com/quicwg; source code and issues list for this draft can be found at https://github.com/quicwg/base-drafts/labels/-http.}
 }
+
+@inproceedings{5230775,
+  author    = {Zhang, Min and Dusi, Maurizio and John, Wolfgang and Chen, Changjia},
+  booktitle = {2009 Ninth Annual International Symposium on Applications and the Internet},
+  title     = {Analysis of UDP Traffic Usage on Internet Backbone Links},
+  year      = {2009},
+  volume    = {},
+  number    = {},
+  pages     = {280-281},
+  abstract  = {We compared UDP and TCP traffic in several traffic traces collected from different networks and geographical locations, at different times. We find that TCP still dominates in terms of packets and bytes, but UDP is now often responsible for the largest fraction of flows on a given link. A port-based analysis suggests that the recent increase in UDP flows on the traces analyzed stems mainly from P2P applications using UDP for their overlay signaling traffic. This trend may again change with the advent of IPTV and UDP based P2P applications, which not only signal, but also transport large data segments via UDP. We will continue to monitor available data to track trends in UDP usage, and specifically seek data from China where UDP-based IPTV traffic is already common. Finally, we note that precise traffic classification requires methods beyond simple port classification. Most current traffic classification techniques focus on TCP, with only preliminary examination of techniques for UDP traffic (other than deep packet inspection). Given the growing evidence for the use of UDP for increasingly popular applications, including for bulk data transfer in China, we conclude that traffic analysis methods must evolve to classify also UDP traffic.},
+  keywords  = {},
+  doi       = {10.1109/SAINT.2009.65},
+  issn      = {},
+  month     = {July}
+}
+
+@inproceedings{9670120,
+  author    = {Rajaboevich, Gulomov Sherzod and Turgunovna, Malikova Nodira and Erkinovna, Qurbonova Kabira and Tileubaevna, Arzieva Jamila},
+  booktitle = {2021 International Conference on Information Science and Communications Technologies (ICISCT)},
+  title     = {A method to improve the quality of service and overcome the loss of network packets},
+  year      = {2021},
+  volume    = {},
+  number    = {},
+  pages     = {1-3},
+  abstract  = {This paper provides a scheme of how the QUIC protocol works and analyzes the functioning of the QUIC protocol to strengthen the TCP protocol. A traffic filtering scheme by inserting a TCP pseudo-header and transmitting a stream with QUIC protocol support to minimize the loss of network packets is proposed.},
+  keywords  = {},
+  doi       = {10.1109/ICISCT52966.2021.9670120},
+  issn      = {},
+  month     = {Nov}
+}
+
+@inproceedings{WOS:000561707700021,
+  author                     = {Zhauniarovich, Yury and Dodia, Priyanka},
+  editor                     = {Jacquenet, C and DeTurck, F and Chemouil, P and Esposito, F and Festor, O and Cerroni, W and Secci, S},
+  title                      = {Sorting the Garbage: Filtering Out DRDoS Amplification Traffic in ISP
+                                Networks},
+  booktitle                  = {PROCEEDINGS OF THE 2019 IEEE CONFERENCE ON NETWORK SOFTWARIZATION
+                                (NETSOFT 2019)},
+  year                       = {2019},
+  pages                      = {142-150},
+  note                       = {5th IEEE Conference on Network Softwarization (IEEE NetSoft) / 2nd
+                                International Workshop on Advances in Slicing for Softwarized
+                                Infrastructures (S4SI), Paris, FRANCE, JUN 24-28, 2019},
+  organization               = {IEEE; IEEE Commun Soc; Orange; Thales; Intel; Huawei; gandi.net; Nokia
+                                Bell Labs},
+  abstract                   = {Distributed Reflected Denial of Service (DRDoS) attacks have been
+                                continuing to grow unprecedentedly in the recent years. Attackers abuse
+                                genuine services running some application protocols built over UDP to
+                                generate amplified traffic targeting victim network. An Internet Service
+                                Provider (ISP) may host hundreds or even thousands of hosts running
+                                these vulnerable protocols that could become amplifier nodes in DRDoS
+                                attacks. If abused, they can collectively cause large volumes of garbage
+                                amplification traffic flowing out of the ISP network. This wasteful
+                                bandwidth consumption costs the provider money and loss of Quality of
+                                Service (QoS) to its customers. Moreover, the owners of services
+                                vulnerable to amplification have to spend their resources to process
+                                illicit requests.
+                                In this paper, we propose a novel idea to filter out garbage traffic
+                                from an ISP network. We employ a special type of a honeypot that
+                                collects information about ongoing DRDoS attacks, and Software Defined
+                                Network (SDN) paradigm offering us a unified interface to deploy
+                                firewall rules on a large variety of network devices. The rules block
+                                incoming amplification requests from reaching amplifiers located within
+                                the provider network rescuing vulnerable services from being abused.
+                                This prevents garbage traffic from leaving the network enabling the
+                                provider to save money and improve QoS. Moreover, our solution also
+                                contributes to victim's liveliness because it reduces the attack traffic
+                                reaching the target network. In addition, it stimulates ISPs to
+                                implement ingress filtering best practices for all its network routers
+                                in order to minimize damage from an attacker located in the same
+                                network.},
+  publisher                  = {IEEE},
+  address                    = {345 E 47TH ST, NEW YORK, NY 10017 USA},
+  type                       = {Proceedings Paper},
+  language                   = {English},
+  affiliation                = {Zhauniarovich, Y (Corresponding Author), Perfect Equanim, Minsk, BELARUS.
+                                Zhauniarovich, Yury, Perfect Equanim, Minsk, BELARUS.
+                                Dodia, Priyanka, HBKU, Qatar Comp Res Inst, Doha, Qatar.},
+  isbn                       = {978-1-5386-9376-6},
+  keywords                   = {amplification attacks; garbage traffic filtering; honeypot; ISP networks},
+  research-areas             = {Computer Science; Telecommunications},
+  web-of-science-categories  = {Computer Science, Software Engineering; Telecommunications},
+  author-email               = {yury@perfectequanimity.com
+                                pgdodia@hbku.edu.qa},
+  researcherid-numbers       = {Dodia, Priyanka/ABC-7568-2020},
+  number-of-cited-references = {29},
+  times-cited                = {4},
+  usage-count-last-180-days  = {0},
+  usage-count-since-2013     = {2},
+  doc-delivery-number        = {BP7EH},
+  web-of-science-index       = {Conference Proceedings Citation Index - Science (CPCI-S)},
+  unique-id                  = {WOS:000561707700021},
+  da                         = {2022-03-20}
+}
