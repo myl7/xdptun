@@ -53,7 +53,7 @@ Check tracing output to check if connection is fine, and then change to use rele
 
 ### Results
 
-`Speed` means average download speed reported by cURL, and uses uint MiB/s
+`Speed` means average download speed reported by cURL, and uses unit MiB/s
 
 | Protocols                           | Speed 1 | Speed 2 | Speed 3 | Average Speed | CPU Usage |
 | ----------------------------------- | ------- | ------- | ------- | ------------- | --------- |
@@ -83,8 +83,8 @@ One good result is that even in the CPU-bottleneck situation, xdptun only causes
 - Run `dd if=/dev/zero of=test bs=256M count=4` on lenovo to create a 1 GiB = 1073741824 bytes test file `test`
 - `cd test/h3` and install Python deps
 - Run `python3 server.py -c ../tls/test.crt -k ../tls/test.key -d .` on lenovo to serve it on HTTP
-- Run `python3 client.py -k https://192.168.1.1:8000/ --local-port 8000` on pi to fetch it over HTTP/3
   - TLS is forced in HTTP/3 (due to be forced in QUIC)
+- Run `python3 client.py -k https://192.168.1.1:8000/ --local-port 8000` on pi to fetch it over HTTP/3
   - Bind to port 8000 to let xdptun match the packets
   - Load xpdtun, then fetch over HTTP/3 over xdptun
 
@@ -92,7 +92,7 @@ Check tracing output to check if connection is fine, and then change to use rele
 
 ### Results
 
-`Speed` means average download speed reported by the client script, and uses uint MiB/s
+`Speed` means average download speed reported by the client script, and uses unit MiB/s
 
 | Protocols          | Speed 1 | Speed 2 | Speed 3 | Average Speed | CPU Usage |
 | ------------------ | ------- | ------- | ------- | ------------- | --------- |

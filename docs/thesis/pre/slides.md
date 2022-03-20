@@ -424,26 +424,12 @@ flowchart LR
 
 HTTP/1.0 over WireGuard over xdptun
 
+环境：
+
 ```mermaid
 flowchart LR
   S1[pi: Raspberry Pi 3B+] --- S2[local wired connection] --- S3[lenovo: My Laptop]
 ```
-
-- Hostname: lenovo
-  - Machine Type: Yoga Slim 7 Pro-14ACH5 Laptop (ideapad) - Type 82MS
-    - [Spec](https://pcsupport.lenovo.com/us/en/products/laptops-and-netbooks/yoga-series/yoga-slim-7-pro-14ach5/82ms/82ms0000cd/pf2p5rrf)
-  - Wired Network: 1000Mbps
-  - OS: Arch Linux
-  - Kernel Version: 5.16.14-arch1-1
-- Hostname: pi
-  - Machine Type: Raspberry Pi 3 Model B+
-    - [Spec](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/)
-  - Wired Network: 300Mbps over USB 2.0
-  - OS: Raspberry Pi OS (64-bit)
-    - Debian version: 11 (bullseye)
-  - Kernel Version: 5.15.28-v8+
-  - Power: By USB of lenovo
-- Network: Connected locally over wired connection
 
 ---
 
@@ -451,7 +437,47 @@ flowchart LR
 
 HTTP/1.0 over WireGuard over xdptun
 
-`Speed` means average download speed reported by cURL, and uses uint MiB/s
+- 网络: Connected locally over wired connection
+- Hostname: lenovo
+  - 设备型号: Yoga Slim 7 Pro-14ACH5 Laptop (ideapad) - Type 82MS
+  - 有线网络: 1000Mbps
+  - OS: Arch Linux
+  - 内核版本: 5.16.14-arch1-1
+- Hostname: pi
+  - 设备型号: Raspberry Pi 3 Model B+
+  - 有线网络: 300Mbps over USB 2.0
+  - OS: Raspberry Pi OS (64-bit)
+    - Debian version: 11 (bullseye)
+  - 内核版本: 5.15.28-v8+
+  - 电源: 由 lenovo USB 供电
+
+---
+
+# 性能测试
+
+HTTP/1.0 over WireGuard over xdptun
+
+步骤：
+
+- 生成一个 1 GiB = 1073741824 bytes 大小的测试大文件
+- 利用 `python3 -m http.server` serve 此大文件
+  - 使用 HTTP/1.0 即是受 `python3 -m http.server` 的限制
+- 利用 cURL 下载此大文件
+  - 利用 WireGuard bind 的不同 IP 测试经过 WireGuard 与否的状况
+  - 加载 xpdtun 以测试是否进一步经过 xdptun
+    - xdptun 加载到原 interface 而非 WireGuard 提供的 interface
+- 先跟踪 log 判断 xdptun 是否被成功调用，确认后关闭 log 进行测试
+  - 基于 `bpf_printk` 的 log 开销不小，需要排除其影响
+
+---
+
+# 性能测试
+
+HTTP/1.0 over WireGuard over xdptun
+
+结果：
+
+- 表中 `Speed` 表示 cURL 报告的平均下载速率，单位为 MiB/s
 
 | Protocols                           | Speed 1 | Speed 2 | Speed 3 | Average Speed | CPU Usage |
 | ----------------------------------- | ------- | ------- | ------- | ------------- | --------- |
@@ -460,7 +486,7 @@ HTTP/1.0 over WireGuard over xdptun
 | HTTP/1.0 over WireGuard over xdptun | 9.80    | 9.80    | 9.80    | 9.80          | Higher    |
 
 - WireGuard 对于树莓派而言太重，CPU 是瓶颈
-- 在这种 CPU 为瓶颈的环境下，由于 xdptun 造成的额外压力，throughput 会下降约 10%
+- 在这种 CPU 为瓶颈的环境下，由于 xdptun 造成的额外 CPU 压力，throughput 会下降约 10%
 
 ---
 
@@ -468,8 +494,29 @@ HTTP/1.0 over WireGuard over xdptun
 
 HTTP/3 over xdptun
 
-- WireGuard 对于树莓派而言太重，CPU 是瓶颈
-- 在这种 CPU 为瓶颈的环境下，由于 xdptun 造成的额外压力，throughput 会下降约 10%
+环境：
+
+- 同前
+- 使用 Python 库 aioquic 实现 HTTP.3
+
+步骤：
+
+- 生成一个 1 GiB = 1073741824 bytes 大小的测试大文件
+- 安装 Python 依赖
+- 运行提供的 server 脚本 serve 此大文件
+  - 由于 TLS 在 HTTP/3 是强制的（因为在 QUIC 中强制要求），需要使用提供的自签名证书
+- 运行提供的 client 脚本下载此大文件
+  - 加载 xpdtun 以测试是否经过 xdptun
+
+---
+
+# 性能测试
+
+HTTP/3 over xdptun
+
+结果：
+
+- aioquic example 实现有性能问题，仅能达到约 600KB/s 且 CPU 占用不高
 
 ---
 layout: center
