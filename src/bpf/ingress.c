@@ -41,9 +41,15 @@ int ingress_f(struct xdp_md *ctx) {
   if (ip->protocol != IPPROTO_TCP) {
     return XDP_PASS;
   }
+  if (bpf_ntohs(ip->tot_len) < 12) {
+    return XDP_PASS;
+  }
 
   CHECK_TCP_BOUND(tcp, XDP_PASS);
   if (check_bound(tcp, (void *)tcp + tcp->doff * 4, data, data_end)) {
+    return XDP_PASS;
+  }
+  if (tcp->doff != 5) {
     return XDP_PASS;
   }
 
@@ -64,10 +70,6 @@ int ingress_f(struct xdp_md *ctx) {
   __u8 pad_alloc = pad_diff > 0 ? pad_diff : 0;
 
   __u16 ip_tot_len = bpf_ntohs(ip->tot_len);
-  // 12 bytes are moved to tail to leave enough space to transform UDP header to TCP header
-  if (ip_tot_len < 12) {
-    return XDP_PASS;
-  }
   ip_tot_len -= 12;
   ip_tot_len &= 0xfff;
 
@@ -84,6 +86,7 @@ int ingress_f(struct xdp_md *ctx) {
   // Set UDP checksum according to TCP checksum
   udp->check = bpf_htons(csum_delta(bpf_ntohs(tcp->check), IPPROTO_UDP - IPPROTO_TCP - 12 - (int)pad_alloc - (tcp->doff << 12)));
 
+  // 12 bytes are moved to tail to leave enough space to transform UDP header to TCP header
   memmove((void *)tcp + 8, data_bak, 12);
 
   long res = bpf_xdp_adjust_tail(ctx, -12 - (int)pad_alloc);
