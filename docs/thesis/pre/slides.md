@@ -84,7 +84,7 @@ UDP-over-TCP 现状
 - 无法复用 Linux 网络栈工具：wrap/unwrap 在用户态实现，无法复用功能丰富的 Linux 网络栈
   - 具体为 TC、Netfilter（Iptables）、Ipset 等工具
 
-为了解决以上问题，我们选用了 eBPF 来实现一套 UDP-over-pesudo-TCP 方案，通过在 TC BPF 和 XDP 中插入 pesudo-TCP header 来实现 UDP-over-TCP
+为了解决以上问题，我们选用了 eBPF 来实现一套 UDP-over-pseudo-TCP 方案，通过在 TC BPF 和 XDP 中插入 pseudo-TCP header 来实现 UDP-over-TCP
 
 ---
 

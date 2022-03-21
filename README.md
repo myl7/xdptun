@@ -1,6 +1,14 @@
 # xdptun
 
-UDP packet obfuscation based on XDP, which tunnels UDP over TCP-like
+UDP packet obfuscation with eBPF, which tunnels UDP over pseudo-TCP
+
+## Technical Notes
+
+See [`docs/tech.md`](/docs/tech.md)
+
+## Benchmarks
+
+See [`docs/bench.md`](/docs/bench.md)
 
 ## License
 
