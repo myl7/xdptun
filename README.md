@@ -14,7 +14,7 @@ See [`docs/bench.md`](/docs/bench.md)
 
 ### Code
 
-Copyright (c) 2021-2022 myl7
+Copyright (c) 2022 myl7
 
 SPDX-License-Identifier: GPL-2.0-or-later
 
