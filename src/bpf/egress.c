@@ -1,10 +1,6 @@
 // Copyright (c) 2022 myl7
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define BPF_NO_GLOBAL_DATA
-#define LOG_MAP_NAME egress_log_map
-#define LOG_CTX_NAME skb
-
 #include <linux/bpf.h>
 #include <linux/pkt_cls.h>
 #include <linux/if_ether.h>
@@ -12,16 +8,18 @@
 #include <linux/tcp.h>
 #include <linux/udp.h>
 #include <linux/in.h>
+#define BPF_NO_GLOBAL_DATA
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 #include "mem.h"
 #include "hdr.h"
 #include "csum.h"
+#define LOG_CTX_NAME skb
 #include "log.h"
 
 const char ___license[] SEC("license") = "GPL";
 
-SETUP_LOG_MAP(egress_log_map);
+SETUP_LOG_MAP(log_map);
 
 SEC("egress")
 int egress_f(struct __sk_buff *skb) {

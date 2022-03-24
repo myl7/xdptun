@@ -37,6 +37,7 @@
 #define SETUP_LOG_MAP(name)
 #endif
 
+// FIXME: BPF_SNPRINTF and bpf_perf_event_output seem not to work
 #define LOG_TO_MAP(s, args...)                                      \
   ({                                                                \
     BPF_PRINTK_FMT_MOD char out[LOG_MSG_MAXSIZE];                   \

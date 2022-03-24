@@ -20,7 +20,7 @@ BPF_BUILD_DIR = $(BUILD_DIR)/bpf
 BPF_SRCS = $(wildcard $(BPF_SRC_DIR)/*.c)
 BPF_OBJS = $(BPF_SRCS:$(BPF_SRC_DIR)/%.c=$(BPF_BUILD_DIR)/%.o)
 BPF_DEPS = $(BPF_OBJ:%.o=%.d)
-BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR) -DLOG_LEVEL=$(LOG_LEVEL)$(if $(LOG_USE_MAP), -DLOG_USE_MAP)$(if $(FILTER_PORT), -DFILTER_PORT=$(FILTER_PORT))
+BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR) -g -DLOG_LEVEL=$(LOG_LEVEL)$(if $(LOG_USE_MAP), -DLOG_USE_MAP)$(if $(FILTER_PORT), -DFILTER_PORT=$(FILTER_PORT))
 
 # Executable config
 CLANG ?= clang

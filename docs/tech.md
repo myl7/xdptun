@@ -125,3 +125,9 @@ See [Checksum Offloads of linux docs](https://www.kernel.org/doc/html/v5.16/netw
 
 According to [the Stack Overflow answer](https://stackoverflow.com/questions/64861121/ebpf-program-load-fails-without-verifier-log), it should be a bug of `iproute`.
 I meet it only on Arch Linux and on Raspberry Pi OS (64-bit) the detailed error info is finely output.
+
+## Why `-g` is passed even not to debug?
+
+Building BPF with `-g` will add BTF sections to the executable, which is very helpful[^7]
+
+[^7]: See [the kernel doc](https://www.kernel.org/doc/html/latest/bpf/btf.html) for details
