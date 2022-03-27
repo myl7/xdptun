@@ -4,7 +4,7 @@
 #pragma once
 
 #include <bpf/bpf_helpers.h>
-#include "utils.h"
+#include "inline.h"
 
 static always_inline __u16 csum_delta(__u32 old_sum, int delta) {
   __u32 new_sum = ~old_sum + delta;

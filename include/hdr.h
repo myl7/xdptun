@@ -4,7 +4,7 @@
 #pragma once
 
 #include <bpf/bpf_helpers.h>
-#include "utils.h"
+#include "inline.h"
 
 static always_inline int check_bound(void *start, void *end, void *data, void *data_end) {
   if (start > end) {
