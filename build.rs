@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 use std::env;
-use std::fs::remove_file;
 use std::path::Path;
 use std::process::Command;
 
 fn build_bpf(name: &str) {
   let out_dir = env::var("OUT_DIR").unwrap();
-  remove_file(Path::new(&out_dir).join(format!("{}.bpf.o", name))).ok();
   assert!(Command::new("clang")
     .args(&[
       "-O2",
