@@ -5,9 +5,10 @@
 
 #include <bpf/bpf_helpers.h>
 
-#define LOG_LEVEL_ERROR 0
-#define LOG_LEVEL_INFO 1
-#define LOG_LEVEL_DEBUG 2
+#define LOG_LEVEL_OFF 0
+#define LOG_LEVEL_ERROR 1
+#define LOG_LEVEL_INFO 2
+#define LOG_LEVEL_DEBUG 3
 
 #ifndef LOG_LEVEL
 #define LOG_LEVEL LOG_LEVEL_DEBUG
