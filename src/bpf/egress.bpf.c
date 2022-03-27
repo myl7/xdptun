@@ -16,6 +16,7 @@
 #include "csum.h"
 #define LOG_CTX_NAME skb
 #include "log.h"
+#include "filter.h"
 
 const char ___license[] SEC("license") = "GPL";
 
@@ -44,11 +45,7 @@ int egress_f(struct __sk_buff *skb) {
 
   CHECK_UDP_BOUND(udp, TC_ACT_OK);
 
-#ifdef FILTER_PORT
-  if (bpf_ntohs(udp->dest) != FILTER_PORT) {
-    return TC_ACT_OK;
-  }
-#endif
+  EGRESS_FILTER(TC_ACT_OK);
 
   LOG_INFO("egress recv");
 

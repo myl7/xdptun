@@ -10,7 +10,6 @@ fn main() {
   println!("cargo:rerun-if-changed=src/bpf");
   println!("cargo:rerun-if-env-changed=LOG_LEVEL");
   println!("cargo:rerun-if-env-changed=LOG_USE_MAP");
-  println!("cargo:rerun-if-env-changed=FILTER_PORT");
 
   let out_dir = env::var("OUT_DIR").unwrap();
   remove_file(Path::new(&out_dir).join("ingress.bpf.o")).ok();

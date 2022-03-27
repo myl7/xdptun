@@ -14,6 +14,7 @@
 #include "hdr.h"
 #include "csum.h"
 #include "log.h"
+#include "filter.h"
 
 const char ___license[] SEC("license") = "GPL";
 
@@ -51,11 +52,7 @@ int ingress_f(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
-#ifdef FILTER_PORT
-  if (bpf_ntohs(tcp->dest) != FILTER_PORT) {
-    return XDP_PASS;
-  }
-#endif
+  INGRESS_FILTER(XDP_PASS);
 
   LOG_INFO("ingress recv");
 
