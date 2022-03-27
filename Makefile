@@ -17,7 +17,7 @@ INCLUDE_DIR = include
 # BPF config
 BPF_SRC_DIR = $(SRC_DIR)/bpf
 BPF_BUILD_DIR = $(BUILD_DIR)/bpf
-BPF_SRCS = $(wildcard $(BPF_SRC_DIR)/*.c)
+BPF_SRCS = $(wildcard $(BPF_SRC_DIR)/*.bpf.c)
 BPF_OBJS = $(BPF_SRCS:$(BPF_SRC_DIR)/%.c=$(BPF_BUILD_DIR)/%.o)
 BPF_DEPS = $(BPF_OBJ:%.o=%.d)
 BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR) -g -DLOG_LEVEL=$(LOG_LEVEL)$(if $(LOG_USE_MAP), -DLOG_USE_MAP)$(if $(FILTER_PORT), -DFILTER_PORT=$(FILTER_PORT))
@@ -26,11 +26,15 @@ BPF_FLAGS = -O2 -Wall -target bpf -I$(INCLUDE_DIR) -g -DLOG_LEVEL=$(LOG_LEVEL)$(
 CLANG ?= clang
 CLANG_FORMAT ?= clang-format
 
-all: mkdir $(BPF_OBJS)
+all: mkdir ingress egress
 
-.PHONY: all mkdir clean format format-check
+.PHONY: all mkdir clean format format-check ingress egress
 
 -include $(BPF_DEPS)
+
+ingress: $(BPF_BUILD_DIR)/ingress.bpf.o
+
+egress: $(BPF_BUILD_DIR)/egress.bpf.o
 
 $(BPF_BUILD_DIR)/%.o: $(BPF_SRC_DIR)/%.c
 	$(CLANG) $(BPF_FLAGS) -MMD -c $< -o $@
