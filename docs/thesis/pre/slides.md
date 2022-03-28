@@ -414,9 +414,24 @@ flowchart LR
 ```
 
 - `bpf_xdp_adjust_tail` 收缩 tail 空间以移除包末尾的 12 bytes + pad 的空间
-  - BUG：树莓派 Linux Kernel 中 NIC card driver 未正确设置 `frame_sz` field，会导致此调用失败，修改源码（安全地）注释此 check 即可
+  - 树莓派 Linux Kernel 中 NIC card driver 未设置 `frame_sz` field，会导致此调用失败，修改源码（安全地）注释此 check 即可
+    - 树莓派**没有**官方性地支持 XDP
 - 此调用后所有 L2-L4 header 指针 invalid，但已无需再使用这些指针
 - 最后 `return XDP_PASS` 让包进入 Linux 网络栈
+
+---
+
+# eBPF 的实现细节
+
+用户态程序
+
+- xdp-project/libbpf-rs: Minimal and opinionated eBPF tooling for the Rust ecosystem
+  - 完成可能的 map 持久化
+  - Rust 方便整合其他框架（例如 clap 以实现 argument parsing）
+- xdp-project/xdp-tools/xdp-loader: An XDP program loader
+  - 相较于 iproute2，支持 BTF
+    - clang -g 即可携带 BTF sections
+    - 更详细的 symbols、Source annotated byte code，jited code and verifier log
 
 ---
 
