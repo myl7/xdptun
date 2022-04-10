@@ -535,6 +535,31 @@ HTTP/3 over xdptun
 
 ---
 
+# 缺陷
+
+协议部分
+
+- 无法通过有 conntrack 检测的防火墙
+  - 解决方案：模拟长连接、pseudo-handshake
+
+---
+
+# 缺陷
+
+生态部分
+
+- XDP、TC BPF 支持情况
+  - 例如树莓派不保证 XDP 可用性、不支持 TC BPF
+  - 依赖于 latest stable Linux kernel 的推广
+    - 需要类似于 Arch Linux 的 rolling 发行版
+    - Ubuntu、Debian 等需要手动进行内核更换且无法保证稳定性
+  - XDP native mode 支持较少、offload 支持极稀少（目前仅一款 NIC），skb mode 下缺少性能优势
+- BTF 支持情况
+  - iproute2、tc 不支持
+  - xdp-loader 支持，或是调用 libbpf API 进行 load 亦可
+
+---
+
 # 附录
 
 项目信息
