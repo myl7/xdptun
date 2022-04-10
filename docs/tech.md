@@ -131,3 +131,11 @@ I meet it only on Arch Linux and on Raspberry Pi OS (64-bit) the detailed error 
 Building BPF with `-g` will add BTF sections to the executable, which is very helpful[^7]
 
 [^7]: See [the kernel doc](https://www.kernel.org/doc/html/latest/bpf/btf.html) for details
+
+## Change Ubuntu to latest stable Linux kernel
+
+To play well with XDP and eBPF, it would be better to use a Linux kernel as new as possible.
+Actually `bpf-next` bleeding edge branch is suggested.
+To use latest kernel on Ubuntu, following [the guide of Ubuntu Wiki](https://wiki.ubuntu.com/Kernel/MainlineBuilds) should be enough.
+One point is though `linux-headers-*-generic_*_amd64.deb` is marked with A, if you can not satisfy its dependency requirement (e.g. a newer libc), you CAN in fact skip it and get package `linux-headers-*-generic` from `linux-headers-*_*_all.deb` which is marked both with A and B.
+I CAN NOT ENSURE IT IS STABLE AND SECURE but it works.
