@@ -6,7 +6,7 @@
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 
-#define EGRESS_FILTER(ret) __EGRESS_FILTER(ret, eth, ip, udp)
+#define EGRESS_FILTER(ret) ___EGRESS_FILTER(ret, eth, ip, udp)
 // Customize here to change the egress filter
 #define ___EGRESS_FILTER(ret, eth, ip, udp)                               \
   ({                                                                      \
@@ -15,7 +15,7 @@
     }                                                                     \
   })
 
-#define INGRESS_FILTER(ret) __INGRESS_FILTER(ret, eth, ip, tcp)
+#define INGRESS_FILTER(ret) ___INGRESS_FILTER(ret, eth, ip, tcp)
 // Customize here to change the ingress filter
 #define ___INGRESS_FILTER(ret, eth, ip, tcp)                              \
   ({                                                                      \
