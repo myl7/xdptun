@@ -560,6 +560,31 @@ HTTP/3 over xdptun
 
 ---
 
+# 参考文献
+
+Fast Packet Processing with eBPF and XDP: Concepts, Code, Challenges, and Applications
+
+Limitations:
+
+- Subset of C Language Libraries
+- Non-static Global Variables
+- Loops
+- Limited Stack Space
+- Complex Applications
+
+---
+
+# 参考文献
+
+Fast Packet Processing with eBPF and XDP: Concepts, Code, Challenges, and Applications
+
+Comparison:
+
+- Programmable Data Planes
+  - Run on edge
+- High-speed Packet Processing
+  - Bypass Linux kernel or not
+
 # 附录
 
 项目信息
