@@ -435,6 +435,21 @@ flowchart LR
 
 ---
 
+# eBPF 的实现细节
+
+pseudo handshake
+
+- 模拟 TCP SYN、SYN-ACK、ACK，打开与 CPU 数相同的“连接”数
+- 利用 per-CPU map 记录当前 per-CPU sequence number，更新到 pseudo TCP header 中
+  - 无锁
+- pseudo TCP packet 不再被认为是 TCP 碎片，而是一个长连接的一部分
+- 无视 ACK、拥塞控制等 TCP 功能
+
+- 网络 eBPF 是 event-drive 的结构
+- 需要在用户态利用 raw socket 来发送 pseudo SYN、SYN-ACK、ACK
+
+---
+
 # 性能测试
 
 HTTP/1.0 over WireGuard over xdptun
