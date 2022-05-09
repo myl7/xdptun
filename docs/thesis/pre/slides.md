@@ -143,7 +143,7 @@ Linux 网络栈上的 BPF：
 
 ```mermaid
 flowchart LR
-  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[copy 12 bytes with bpf_skb_store_bytes] --> S5[L2-L4 check] --> S6[L3/4 fields & checksum]
+  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[copy 14 bytes with bpf_skb_store_bytes] --> S5[L2-L4 check] --> S6[L3/4 fields & checksum]
   subgraph now
     S1
   end
@@ -161,16 +161,16 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[copy 12 bytes with bpf_skb_store_bytes] --> S5[L2-L4 check] --> S6[L3/4 fields & checksum]
+  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[copy 14 bytes with bpf_skb_store_bytes] --> S5[L2-L4 check] --> S6[L3/4 fields & checksum]
   subgraph now
     S2
     S3
   end
 ```
 
-- 调用 `bpf_skb_change_tail` 扩大 SKB tail 空间以先 pad 原数据部分至至少 12 bytes（防止 overlapping），再在包末尾添加 12 bytes
+- 调用 `bpf_skb_change_tail` 扩大 SKB tail 空间以先 pad 原数据部分至至少 14 bytes（防止 overlapping），再在包末尾添加 14 bytes
 - 此调用后所有 L2-L4 header 指针 invalid，需要重新进行 check
-- check 过程中，利用 L3 IP header `total length` field 正向获取到原包末尾指针以在满足 BPF verifier 要求的情况下访问新添加的尾 12 bytes
+- check 过程中，利用 L3 IP header `total length` field 正向获取到原包末尾指针以在满足 BPF verifier 要求的情况下访问新添加的尾 14 bytes
   - BPF verifier 不允许从 `data_end` 开始移动指针，因为合法的指针范围是 `[data, data_end)` 不含 `data_end`，从 `data_end` 开始生成的指针是不合法的
 
 ---
@@ -181,7 +181,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[copy 12 bytes with bpf_skb_store_bytes] --> S5[L2-L4 check] --> S6[L3/4 fields & checksum]
+  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[copy 14 bytes with bpf_skb_store_bytes] --> S5[L2-L4 check] --> S6[L3/4 fields & checksum]
   subgraph now
     S4
     S5
@@ -190,7 +190,7 @@ flowchart LR
 
 - 由于存在 SKB，需要利用 `bpf_skb_store_bytes` 进行数据移动
   - `memcpy`/`memmove` 在此处无法使用，否则无法通过 TC 中的 BPF verifier（后续 XDP 中可以使用）
-- 移动 L4 UDP header 后 data 部分前 12 bytes 到包末尾新增的尾 12 bytes，为伪造 TCP header 留出足够空间
+- 移动 L4 UDP header 后 data 部分前 14 bytes 到包末尾新增的尾 14 bytes，为伪造 TCP header 留出足够空间
   - TCP header 无可选的 `Options` 和 `Padding`
 - 此调用后所有 L2-L4 header 指针 invalid，需要重新进行 check
 
@@ -202,7 +202,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[copy 12 bytes with bpf_skb_store_bytes] --> S5[L2-L4 check] --> S6[L3/4 fields & checksum]
+  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[copy 14 bytes with bpf_skb_store_bytes] --> S5[L2-L4 check] --> S6[L3/4 fields & checksum]
   subgraph now
     S4
     S5
@@ -235,7 +235,7 @@ flowchart LR
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |      Source Port (kept)       |   Destination Port (kept)     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Sequence Number (Length + Checksum originally)        |
+|                         Sequence Number                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Acknowledgment Number                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -266,14 +266,14 @@ pre {
 
 ```mermaid
 flowchart LR
-  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[copy 12 bytes with bpf_skb_store_bytes] --> S5[L2-L4 check] --> S6[L3/4 fields & checksum]
+  S1[L2-L4 check] --> S2[bpf_skb_change_tail] --> S3[L2-L4 check] --> S4[copy 14 bytes with bpf_skb_store_bytes] --> S5[L2-L4 check] --> S6[L3/4 fields & checksum]
   subgraph now
     S6
   end
 ```
 
 - 更新 L3 IP header `protocol`、`total length`、`header checksum`
-- 更新 L4 TCP header `data offset`
+- 更新 L4 TCP header `data offset`、`sequence number`
 - Checksum
   - L3 checksum 总是由内核完成，此处需处理
   - L4 checksum offload 到 NIC card 完成
@@ -290,7 +290,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  S1[L2-L4 check] --> S2[copy 12 bytes back] --> S3[L3/4 fields & checksum] --> S4[bpf_xdp_adjust_tail]
+  S1[L2-L4 check] --> S2[copy 14 bytes back] --> S3[L3/4 fields & checksum] --> S4[bpf_xdp_adjust_tail]
   subgraph now
     S1
   end
@@ -309,15 +309,15 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  S1[L2-L4 check] --> S2[copy 12 bytes back] --> S3[L3/4 fields & checksum] --> S4[bpf_xdp_adjust_tail]
+  S1[L2-L4 check] --> S2[copy 14 bytes back] --> S3[L3/4 fields & checksum] --> S4[bpf_xdp_adjust_tail]
   subgraph now
     S2
   end
 ```
 
 - 将 TCP header 指针 cast 为 UDP header，访问 `length` field 以计算 padding
-- 类似与出方向，check 过程中，利用 L3 IP header `total length` field 正向获取到包尾 12 bytes 的头指针以在满足 BPF verifier 要求的情况下访问尾 12 bytes
-- 复制包尾 12 bytes 到 TCP header 尾 12 bytes
+- 类似与出方向，check 过程中，利用 L3 IP header `total length` field 正向获取到包尾 14 bytes 的头指针以在满足 BPF verifier 要求的情况下访问尾 14 bytes
+- 复制包尾 14 bytes 的前 12 bytes 到 TCP header 尾 12 bytes，复制尾 2 bytes 到 TCP header sequence number 前 2 bytes 处
 
 ---
 
@@ -327,7 +327,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  S1[L2-L4 check] --> S2[copy 12 bytes back] --> S3[L3/4 fields & checksum] --> S4[bpf_xdp_adjust_tail]
+  S1[L2-L4 check] --> S2[copy 14 bytes back] --> S3[L3/4 fields & checksum] --> S4[bpf_xdp_adjust_tail]
   subgraph now
     S2
   end
@@ -342,7 +342,7 @@ flowchart LR
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |      Source Port (kept)       |   Destination Port (kept)     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Sequence Number (Length + Checksum originally)        |
+|                        Sequence Number                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |        Acknowledgment Number (latter all are written)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -389,7 +389,7 @@ pre {
 
 ```mermaid
 flowchart LR
-  S1[L2-L4 check] --> S2[copy 12 bytes back] --> S3[L3/4 fields & checksum] --> S4[bpf_xdp_adjust_tail]
+  S1[L2-L4 check] --> S2[copy 14 bytes back] --> S3[L3/4 fields & checksum] --> S4[bpf_xdp_adjust_tail]
   subgraph now
     S3
   end
@@ -407,13 +407,13 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  S1[L2-L4 check] --> S2[copy 12 bytes back] --> S3[L3/4 fields & checksum] --> S4[bpf_xdp_adjust_tail]
+  S1[L2-L4 check] --> S2[copy 14 bytes back] --> S3[L3/4 fields & checksum] --> S4[bpf_xdp_adjust_tail]
   subgraph now
     S4
   end
 ```
 
-- `bpf_xdp_adjust_tail` 收缩 tail 空间以移除包末尾的 12 bytes + pad 的空间
+- `bpf_xdp_adjust_tail` 收缩 tail 空间以移除包末尾的 14 bytes + pad 的空间
   - 树莓派 Linux Kernel 中 NIC card driver 未设置 `frame_sz` field，会导致此调用失败，修改源码（安全地）注释此 check 即可
     - 树莓派**没有**官方性地支持 XDP
 - 此调用后所有 L2-L4 header 指针 invalid，但已无需再使用这些指针
@@ -432,6 +432,8 @@ flowchart LR
   - 相较于 iproute2，支持 BTF
     - clang -g 即可携带 BTF sections
     - 更详细的 symbols、Source annotated byte code，jited code and verifier log
+- fallback: libbpf
+  - C API，API 定义和用法比较艰涩
 
 ---
 
@@ -599,6 +601,8 @@ Comparison:
   - Run on edge
 - High-speed Packet Processing
   - Bypass Linux kernel or not
+
+---
 
 # 附录
 
