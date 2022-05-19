@@ -9,8 +9,12 @@
 
 \subsection{设备配置}
 
-为了测试本项目的性能，我们使用了一台笔记本设备和一台树莓派设备来进行测试，具体性能参数如表<TOREF>所示。
+为了测试本项目的性能，我们使用了一台笔记本设备和一台树莓派设备来进行测试。
 为便于分辨，我们将笔记本端记为 A 端，将树莓派端记为 B 端。
+A 端作为笔记本，设备型号为 Yoga Slim 7 Pro-14ACH5 Laptop (ideapad) - Type 82MS，网卡支持最大带宽为 1000Mbps，操作系统为 Arch Linux 从而方便使用较新的 Linux 内核，Linux 内核版本为 5.16.14-arch1-1。
+B 端作为树莓派设备，设备型号为 Raspberry Pi 3 Model B+，网卡支持最大带宽为 300Mbps，实际经由 USB 2.0 接口转换获得所以无法达到此最大速率，操作系统为 Raspberry Pi OS (64-bit) 而此系统镜像是基于 Debian bullseye 即 Debian 11 修改而来，Linux 内核版本为 5.15.28-v8+ 并由我们进行了一些小修改，此修改将在后续部分介绍。
+特别地，由于 B 端树莓派设备是嵌入式设备，供电可能会影响 CPU 性能进而影响试验结果，特此指出 B 端由 A 端的 USB 接口进行供电。
+A B 两端间经由 RJ45 接口的网线连接。
 
 \subsection{Raspberry Pi OS XDP 特殊处理}
 
@@ -35,14 +39,30 @@
 由于实验中 A 端与 B 端进行了本地的有线连接，所以无法进一步测试丢包等情况下的状况，但是可以最大限度地测试 xdptun 在吞吐量上的性能影响。
 测试中下载大文件作为测试的过程使用 cURL 这一经典网络客户端实现作为工具。
 额外的，在经过实际测试确认 A 端与 B 端连通后，还需要注意移除 \texttt{bpf\_printk} 函数。
-因为根据 Linux 文档介绍<TOREF>，涉及 IO 的 \texttt{bpf\_printk} 是一个可能的性能损失点，移除它们才能避免不必要操作对测试中软件性能的干扰。
+根据 Linux 文档介绍<TOREF>，涉及 IO 的 \texttt{bpf\_printk} 是一个可能的性能损失点，移除它们才能避免不必要操作对测试中软件性能的干扰。
 环境配置完成后，针对每个环境，我们测试三遍同一大文件下载时间并观察 CPU 和内存等的占用情况，然后取平均值作为结果。
 
 \subsection{测试结果}
 
-我们在测试中获得的数据如图<TOREF>所示。
+我们在测试中获得的数据如表~\ref{tab:perf-test}所示。
 
-在实验过程中，我们可以观察到，无论是三种中哪一种情况，作为接收端的 B 端的 CPU 都维持在一个很高的水平。
+\begin{table}[h]
+  \centering
+  \caption{性能测试结果}
+  \label{tab:perf-test}
+  \begin{tabular}{c c c c c}
+    \toprule
+    测试环境 & 第一次结果 & 第二次结果 & 第三次结果 & 平均值 \\
+    \midrule
+    HTTP & 15.1 & 14.8 & 15.0 & 15.0 \\
+    HTTP over WireGuard & 10.8 & 11.0 & 10.9 & 10.9 \\
+    HTTP over WireGuard over xdptun & 9.80 & 9.80 & 9.80 & 9.80 \\
+    \bottomrule
+  \end{tabular}
+  \note{结果数字均为完成下载所需的时间，单位为秒}
+\end{table}
+
+在实验过程中，我们还可以观察到，无论是三种中哪一种情况，作为接收端的 B 端的 CPU 都维持在一个很高的水平。
 但即便是这样，通过分析表中数据，我们也可以发现，xdptun 仅会对带宽造成约 10\% 的损失，是一个可以接受的数值。
 
 \section{功能测试}

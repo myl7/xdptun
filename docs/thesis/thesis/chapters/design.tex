@@ -13,6 +13,14 @@ xdptun 这套 UDP over pseudo-TCP 方案的最终分发产物为两份 eBPF 二�
 经过处理后的数据帧会重入 Linux 内核网络栈，正常经由 Linux 内核网络栈中入方向各部件处理后，再递送给用户态监听的程序。
 而在出方向上，网络数据在被用户态程序发送给 Linux 内核网络栈后，首先经过 Linux 内核网络栈中出方向各部件处理，最后以数据帧的形式在 Linux 内核网络栈末尾触发 TC 出方向挂载点上程序的处理。
 经过处理后的数据帧被递送给网卡设备，再被发送到网络之中。
+概括性的流程图请参见图~\ref{fig:flow}。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1\textwidth]{xdptun-flow.drawio.pdf}
+  \caption{出入方向数据帧处理流程}
+  \label{fig:flow}
+\end{figure}
 
 \section{出方向处理}
 
@@ -36,9 +44,17 @@ xdptun 这套 UDP over pseudo-TCP 方案的最终分发产物为两份 eBPF 二�
 而在 TCP header 中，除开和 UDP header 对应的 8 字节，剩余至少还需要 12 字节来存储 TCP header 的各其他字段。
 所以，我们在帧尾处额外扩展了 14 字节的空间，其中前 12 字节存储紧贴 UDP header 后的 UDP body 的前 12 字节，而最后 2 字节存储 UDP header 中的包长字段。
 这样，我们就在 L4 header 处留出了 20 字节的空间来伪造一个 TCP header。
-具体的帧尾空间扩展需要调用 Linux 系统调用 \texttt{bpf\_skb\_change\_tail} 函数来完成。
+具体的 UDP header 到 TCP header 的转换方案可以参见图~\ref{header}。
+帧尾空间扩展需要调用 Linux 系统调用 \texttt{bpf\_skb\_change\_tail} 函数来完成。
 调用此系统调用来扩展空间后，由于帧数据可能在扩展过程中在内存内发生移动，之前在数据过滤中通过边界检验获得的、被 BPF 校验器允许解引用的指针将会失效而无法使用。
 程序需要重复一遍数据过滤中边界校验的过程来重新获得 L2 到 L4 header 各字段的访问方式。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1\textwidth]{xdptun-header.drawio.pdf}
+  \caption{TCP UDP header 间的转换方案}
+  \label{fig:header}
+\end{figure}
 
 \subsection{Padding}
 
