@@ -13,25 +13,19 @@
 }
 
 \begin{abstract}
-  摘要分中文和英文两种，中文在前，英文在后，博士论文中文摘要一般 800～1500 个汉字，硕士论文中文摘要一般 500～1000 个汉字。
-  英文摘要的篇幅参照中文摘要。
-
-  关键词另起一行并隔行排列于摘要下方，左顶格，中文关键词间空一字或用分号“，”隔开，英文关键词之间用逗号“,”或分号“;”隔开。
-
-  中文摘要是论文内容的总结概括，应简要说明论文的研究目的、基本研究内容、研究方法或过程、结果和结论，突出论文的创新之处。
-  摘要应具有独立性和自明性，即不用阅读全文，就能获得论文必要的信息。
-  摘要中不宜使用公式、图表，不引用文献。
-
-  中文关键词是为了文献标引工作从论文中选取出来用以表示全文主题内容信息的单词和术语，一般 3～8 个词，要求能够准确概括论文的核心内容。
+  以往 UDP 流量在公网中质量不佳，但随着新一代基于 UDP 的上层网络协议的出现，UDP 流量的重要性有了较大的提升，因而需要处理方案从而在当前网络环境下保证 UDP 流量的质量。
+  常见方案是各种 UDP over TCP 方案，但是这些方案往往实现简单而性能不佳，无法提供透明的转换，也无法轻松复用现有的网络工具。
+  本文提供了一套基于 eBPF 的 UDP 包伪装方案 xdptun，克服了 eBPF 高度受限的开发环境，通过在 Linux 内核网络栈入口最前端的 XDP 处和出口最后端的 TC BPF 处加载两份 eBPF 程序进行网络数据帧处理、将 UDP header 与 TCP header 互相转换并在帧尾留存从 header 末移出的数据，从而将 UDP 流量高效地、透明地伪装为 TCP 流量。
+  经过测试，本地环境下与无其他处理相比，部署此方案时性能上仅有约 10\% 的吞吐量损失。
+  尽管此方案尚且无法直接工作在公网上，但基本功能已经完整，相应扩展也已留有方案和空间。
+  此方案能够为基于 UDP 的上层网络协议提供一份当前网络环境下的兼容层，保障这些新一代网络协议在当下的正常高效运行。
 \end{abstract}
 
 \begin{abstract*}
-  This is a sample document of USTC thesis \LaTeX{} template for bachelor,
-  master and doctor. The template is created by zepinglee and seisman, which
-  orignate from the template created by ywg. The template meets the
-  equirements of USTC thesis writing standards.
-
-  This document will show the usage of basic commands provided by \LaTeX{} and
-  some features provided by the template. For more information, please refer to
-  the template document ustcthesis.pdf.
+  UDP traffic used to be inefficent in the Internet. But as the new generation of upper layer network protocol comes out, the importance of UDP traffic increases, and we required solutions to ensure the quality of UDP traffic in current Internet.
+  Common solutions are UDP over TCP, but current implementations are too simgle that they are not efficient, can not provide transparent processing, and are difficult to reuse existing network stack.
+  This paper provides a solution based on eBPF to do UDP packet obfuscation named xdptun, which overcomes the highly limited development environment of eBPF, loads two eBPF programs on the front of Linux kernel network stack, XDP, and on the tail of Linux network stack, TC BPF, to do network data frame processing, updates UDP header to or from TCP header, and leaves moved data to the end of the frame which is extended, in order to obfuscate UDP traffic to TCP traffic efficiently and transparently.
+  According to tests, compared with the case that does not configured xdptun, xdptun only causes about 10\% throughpput fall in the locally connected network.
+  Though so far xdptun can still not work practically on the Internet, the basic function is complete and the extension is considered and prepared.
+  The solution can provide the upper layer network protocols which are based on UDP with a compatible layer in current network environment to ensure these protocols can work correctly and efficiently.
 \end{abstract*}
