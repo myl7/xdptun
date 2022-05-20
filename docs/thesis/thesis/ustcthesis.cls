@@ -2314,7 +2314,7 @@
   \else
     \chapter{中文内容摘要}%
     \ifustc@tocloaded\else
-      本科生需要手动将摘要置于目录后。\par
+      % 本科生需要手动将摘要置于目录后。\par
     \fi
   \fi
 }{
@@ -3047,7 +3047,7 @@
   \else
     \ustc@chapter{\ustc@acknowledgements@name}%
     \ifustc@tocloaded
-      本科生需要手动将致谢置于目录前。\par
+      % 本科生需要手动将致谢置于目录前。\par
     \fi
   \fi
 }{}
