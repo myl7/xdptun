@@ -2263,21 +2263,21 @@
   }
   %
   % 本科生的阿拉伯数字式标题的格式与研究生几乎一致，只有中文数字式需要修改。
-  \ifustc@section@style@arabic\else
-    \ctexset{
-      chapter = {
-        number = \chinese{chapter},
-      },
-      section = {
-        name   = {第,节},
-        number = \chinese{section},
-      },
-      subsection = {
-        number    = \chinese{subsection},
-        aftername = {、},
-      },
-    }
-  \fi
+  % \ifustc@section@style@arabic\else
+  %   \ctexset{
+  %     chapter = {
+  %       number = \chinese{chapter},
+  %     },
+  %     section = {
+  %       name   = {第,节},
+  %       number = \chinese{section},
+  %     },
+  %     subsection = {
+  %       number    = \chinese{subsection},
+  %       aftername = {、},
+  %     },
+  %   }
+  % \fi
 \fi
 
 % 默认的 \cs{chapter*} 生成的章标题没有编号、不更改页眉，
