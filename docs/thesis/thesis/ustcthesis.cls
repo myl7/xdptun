@@ -2312,7 +2312,7 @@
   \ifustc@degree@graduate
     \ustc@chapter{摘要}%
   \else
-    \chapter{中文内容摘要}%
+    \chapter{摘要}%
     \ifustc@tocloaded\else
       % 本科生需要手动将摘要置于目录后。\par
     \fi
@@ -2331,7 +2331,7 @@
   \else
     \begingroup
       \ctexset{chapter/format=\centering\fontsize{16bp}{29.33bp}\selectfont}%
-      \chapter[英文内容摘要]{Abstract}%
+      \chapter[摘要]{Abstract}%
     \endgroup
   \fi
 }{
