@@ -2411,7 +2411,9 @@
   \titlecontents{subsection}
     [2\ccwd]{\normalsize}
     {\contentspush{\thecontentslabel
-      \ifustc@section@style@arabic\hspace{\ccwd}\else 、\fi}}{}
+      % \ifustc@section@style@arabic\hspace{\ccwd}\else 、\fi
+      \hspace{\ccwd}
+    }}{}
     {\ustc@leaders\contentspage}
 \fi
 
