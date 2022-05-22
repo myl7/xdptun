@@ -1,195 +1,88 @@
 @article{10.1145/3371038,
-  author     = {Vieira, Marcos A. M. and Castanho, Matheus S. and Pac\'{\i}fico, Racyus D. G. and Santos, Elerson R. S. and J\'{u}nior, Eduardo P. M. C\^{a}mara and Vieira, Luiz F. M.},
-  title      = {Fast Packet Processing with EBPF and XDP: Concepts, Code, Challenges, and Applications},
-  year       = {2020},
-  issue_date = {January 2021},
-  publisher  = {Association for Computing Machinery},
-  address    = {New York, NY, USA},
-  volume     = {53},
-  number     = {1},
-  issn       = {0360-0300},
-  url        = {https://doi.org/10.1145/3371038},
-  doi        = {10.1145/3371038},
-  abstract   = {Extended Berkeley Packet Filter (eBPF) is an instruction set and an execution environment inside the Linux kernel. It enables modification, interaction, and kernel programmability at runtime. eBPF can be used to program the eXpress Data Path (XDP), a kernel network layer that processes packets closer to the NIC for fast packet processing. Developers can write programs in C or P4 languages and then compile to eBPF instructions, which can be processed by the kernel or by programmable devices (e.g., SmartNICs). Since its introduction in 2014, eBPF has been rapidly adopted by major companies such as Facebook, Cloudflare, and Netronome. Use cases include network monitoring, network traffic manipulation, load balancing, and system profiling. This work aims to present eBPF to an inexpert audience, covering the main theoretical and fundamental aspects of eBPF and XDP, as well as introducing the reader to simple examples to give insight into the general operation and use of both technologies.},
-  journal    = {ACM Comput. Surv.},
-  month      = {feb},
-  articleno  = {16},
-  numpages   = {36},
-  keywords   = {Computer networking, network functions, packet processing}
+  title     = {Fast packet processing with ebpf and xdp: Concepts, code, challenges, and applications},
+  author    = {Vieira, Marcos AM and Castanho, Matheus S and Pac{\'\i}fico, Racyus DG and Santos, Elerson RS and J{\'u}nior, Eduardo PM C{\^a}mara and Vieira, Luiz FM},
+  journal   = {ACM Computing Surveys (CSUR)},
+  volume    = {53},
+  number    = {1},
+  pages     = {1--36},
+  year      = {2020},
+  publisher = {ACM New York, NY, USA}
 }
 
-@misc{rfc768,
-  series       = {Request for Comments},
-  number       = 768,
-  howpublished = {RFC 768},
-  publisher    = {RFC Editor},
-  doi          = {10.17487/RFC0768},
-  url          = {https://www.rfc-editor.org/info/rfc768},
-  author       = {},
-  title        = {{User Datagram Protocol}},
-  pagetotal    = 3,
-  year         = 1980,
-  month        = aug,
-  abstract     = {}
+@article{rfc768,
+  title     = {User datagram protocol},
+  author    = {Postel, Jon and others},
+  year      = {1980},
+  publisher = {STD 6, RFC 768, August}
 }
 
 @article{45646,
-  title   = {BBR: Congestion-Based Congestion Control},
-  author  = {Neal Cardwell and Yuchung Cheng and C. Stephen Gunn and Soheil Hassas Yeganeh and Van Jacobson},
-  year    = {2016},
-  url     = {http://queue.acm.org/detail.cfm?id=3022184},
-  journal = {ACM Queue},
-  pages   = {20 - 53},
-  volume  = {14, September-October}
+  title     = {BBR: congestion-based congestion control},
+  author    = {Cardwell, Neal and Cheng, Yuchung and Gunn, C Stephen and Yeganeh, Soheil Hassas and Jacobson, Van},
+  journal   = {Communications of the ACM},
+  volume    = {60},
+  number    = {2},
+  pages     = {58--66},
+  year      = {2017},
+  publisher = {ACM New York, NY, USA}
 }
 
-@techreport{ietf-quic-http-34,
-  number      = {draft-ietf-quic-http-34},
-  type        = {Internet-Draft},
-  institution = {Internet Engineering Task Force},
-  publisher   = {Internet Engineering Task Force},
-  note        = {Work in Progress},
-  url         = {https://datatracker.ietf.org/doc/html/draft-ietf-quic-http-34},
-  author      = {Mike Bishop},
-  title       = {{Hypertext Transfer Protocol Version 3 (HTTP/3)}},
-  pagetotal   = 75,
-  year        = 2021,
-  month       = feb,
-  day         = 2,
-  abstract    = {The QUIC transport protocol has several features that are desirable in a transport for HTTP, such as stream multiplexing, per-stream flow control, and low-latency connection establishment. This document describes a mapping of HTTP semantics over QUIC. This document also identifies HTTP/2 features that are subsumed by QUIC, and describes how HTTP/2 extensions can be ported to HTTP/3. DO NOT DEPLOY THIS VERSION OF HTTP DO NOT DEPLOY THIS VERSION OF HTTP/3 UNTIL IT IS IN AN RFC. This version is still a work in progress. For trial deployments, please use earlier versions. Note to Readers Discussion of this draft takes place on the QUIC working group mailing list (quic@ietf.org), which is archived at https://mailarchive.ietf.org/arch/search/?email\_list=quic. Working Group information can be found at https://github.com/quicwg; source code and issues list for this draft can be found at https://github.com/quicwg/base-drafts/labels/-http.}
+@article{ietf-quic-http-34,
+  title   = {Hypertext Transfer Protocol Version 3 (HTTP/3). 2 February 2021},
+  author  = {Bishop, EM},
+  journal = {URL https://tools. ietf. org/html/draft-ietf-quic-http-34}
 }
 
 @inproceedings{5230775,
-  author    = {Zhang, Min and Dusi, Maurizio and John, Wolfgang and Chen, Changjia},
-  booktitle = {2009 Ninth Annual International Symposium on Applications and the Internet},
-  title     = {Analysis of UDP Traffic Usage on Internet Backbone Links},
-  year      = {2009},
-  volume    = {},
-  number    = {},
-  pages     = {280-281},
-  abstract  = {We compared UDP and TCP traffic in several traffic traces collected from different networks and geographical locations, at different times. We find that TCP still dominates in terms of packets and bytes, but UDP is now often responsible for the largest fraction of flows on a given link. A port-based analysis suggests that the recent increase in UDP flows on the traces analyzed stems mainly from P2P applications using UDP for their overlay signaling traffic. This trend may again change with the advent of IPTV and UDP based P2P applications, which not only signal, but also transport large data segments via UDP. We will continue to monitor available data to track trends in UDP usage, and specifically seek data from China where UDP-based IPTV traffic is already common. Finally, we note that precise traffic classification requires methods beyond simple port classification. Most current traffic classification techniques focus on TCP, with only preliminary examination of techniques for UDP traffic (other than deep packet inspection). Given the growing evidence for the use of UDP for increasingly popular applications, including for bulk data transfer in China, we conclude that traffic analysis methods must evolve to classify also UDP traffic.},
-  keywords  = {},
-  doi       = {10.1109/SAINT.2009.65},
-  issn      = {},
-  month     = {July}
+  title        = {Analysis of udp traffic usage on internet backbone links},
+  author       = {Zhang, Min and Dusi, Maurizio and John, Wolfgang and Chen, Changjia},
+  booktitle    = {2009 Ninth Annual International Symposium on Applications and the Internet},
+  pages        = {280--281},
+  year         = {2009},
+  organization = {IEEE}
 }
 
 @inproceedings{9670120,
-  author    = {Rajaboevich, Gulomov Sherzod and Turgunovna, Malikova Nodira and Erkinovna, Qurbonova Kabira and Tileubaevna, Arzieva Jamila},
-  booktitle = {2021 International Conference on Information Science and Communications Technologies (ICISCT)},
-  title     = {A method to improve the quality of service and overcome the loss of network packets},
-  year      = {2021},
-  volume    = {},
-  number    = {},
-  pages     = {1-3},
-  abstract  = {This paper provides a scheme of how the QUIC protocol works and analyzes the functioning of the QUIC protocol to strengthen the TCP protocol. A traffic filtering scheme by inserting a TCP pseudo-header and transmitting a stream with QUIC protocol support to minimize the loss of network packets is proposed.},
-  keywords  = {},
-  doi       = {10.1109/ICISCT52966.2021.9670120},
-  issn      = {},
-  month     = {Nov}
+  title        = {A method to improve the quality of service and overcome the loss of network packets},
+  author       = {Rajaboevich, Gulomov Sherzod and Turgunovna, Malikova Nodira and Erkinovna, Qurbonova Kabira and Tileubaevna, Arzieva Jamila},
+  booktitle    = {2021 International Conference on Information Science and Communications Technologies (ICISCT)},
+  pages        = {1--3},
+  year         = {2021},
+  organization = {IEEE}
 }
 
 @inproceedings{WOS:000561707700021,
-  author                     = {Zhauniarovich, Yury and Dodia, Priyanka},
-  editor                     = {Jacquenet, C and DeTurck, F and Chemouil, P and Esposito, F and Festor, O and Cerroni, W and Secci, S},
-  title                      = {Sorting the Garbage: Filtering Out DRDoS Amplification Traffic in ISP
-                                Networks},
-  booktitle                  = {PROCEEDINGS OF THE 2019 IEEE CONFERENCE ON NETWORK SOFTWARIZATION
-                                (NETSOFT 2019)},
-  year                       = {2019},
-  pages                      = {142-150},
-  note                       = {5th IEEE Conference on Network Softwarization (IEEE NetSoft) / 2nd
-                                International Workshop on Advances in Slicing for Softwarized
-                                Infrastructures (S4SI), Paris, FRANCE, JUN 24-28, 2019},
-  organization               = {IEEE; IEEE Commun Soc; Orange; Thales; Intel; Huawei; gandi.net; Nokia
-                                Bell Labs},
-  abstract                   = {Distributed Reflected Denial of Service (DRDoS) attacks have been
-                                continuing to grow unprecedentedly in the recent years. Attackers abuse
-                                genuine services running some application protocols built over UDP to
-                                generate amplified traffic targeting victim network. An Internet Service
-                                Provider (ISP) may host hundreds or even thousands of hosts running
-                                these vulnerable protocols that could become amplifier nodes in DRDoS
-                                attacks. If abused, they can collectively cause large volumes of garbage
-                                amplification traffic flowing out of the ISP network. This wasteful
-                                bandwidth consumption costs the provider money and loss of Quality of
-                                Service (QoS) to its customers. Moreover, the owners of services
-                                vulnerable to amplification have to spend their resources to process
-                                illicit requests.
-                                In this paper, we propose a novel idea to filter out garbage traffic
-                                from an ISP network. We employ a special type of a honeypot that
-                                collects information about ongoing DRDoS attacks, and Software Defined
-                                Network (SDN) paradigm offering us a unified interface to deploy
-                                firewall rules on a large variety of network devices. The rules block
-                                incoming amplification requests from reaching amplifiers located within
-                                the provider network rescuing vulnerable services from being abused.
-                                This prevents garbage traffic from leaving the network enabling the
-                                provider to save money and improve QoS. Moreover, our solution also
-                                contributes to victim's liveliness because it reduces the attack traffic
-                                reaching the target network. In addition, it stimulates ISPs to
-                                implement ingress filtering best practices for all its network routers
-                                in order to minimize damage from an attacker located in the same
-                                network.},
-  publisher                  = {IEEE},
-  address                    = {345 E 47TH ST, NEW YORK, NY 10017 USA},
-  type                       = {Proceedings Paper},
-  language                   = {English},
-  affiliation                = {Zhauniarovich, Y (Corresponding Author), Perfect Equanim, Minsk, BELARUS.
-                                Zhauniarovich, Yury, Perfect Equanim, Minsk, BELARUS.
-                                Dodia, Priyanka, HBKU, Qatar Comp Res Inst, Doha, Qatar.},
-  isbn                       = {978-1-5386-9376-6},
-  keywords                   = {amplification attacks; garbage traffic filtering; honeypot; ISP networks},
-  research-areas             = {Computer Science; Telecommunications},
-  web-of-science-categories  = {Computer Science, Software Engineering; Telecommunications},
-  author-email               = {yury@perfectequanimity.com
-                                pgdodia@hbku.edu.qa},
-  researcherid-numbers       = {Dodia, Priyanka/ABC-7568-2020},
-  number-of-cited-references = {29},
-  times-cited                = {4},
-  usage-count-last-180-days  = {0},
-  usage-count-since-2013     = {2},
-  doc-delivery-number        = {BP7EH},
-  web-of-science-index       = {Conference Proceedings Citation Index - Science (CPCI-S)},
-  unique-id                  = {WOS:000561707700021},
-  da                         = {2022-03-20}
+  title        = {Sorting the garbage: Filtering out DRDoS amplification traffic in ISP networks},
+  author       = {Zhauniarovich, Yury and Dodia, Priyanka},
+  booktitle    = {2019 IEEE Conference on Network Softwarization (NetSoft)},
+  pages        = {142--150},
+  year         = {2019},
+  organization = {IEEE}
 }
 
 @inproceedings{10.1145/3098822.3098842,
-  author    = {Langley, Adam and Riddoch, Alistair and Wilk, Alyssa and Vicente, Antonio and Krasic, Charles and Zhang, Dan and Yang, Fan and Kouranov, Fedor and Swett, Ian and Iyengar, Janardhan and Bailey, Jeff and Dorfman, Jeremy and Roskind, Jim and Kulik, Joanna and Westin, Patrik and Tenneti, Raman and Shade, Robbie and Hamilton, Ryan and Vasiliev, Victor and Chang, Wan-Teh and Shi, Zhongyi},
-  title     = {The QUIC Transport Protocol: Design and Internet-Scale Deployment},
-  year      = {2017},
-  isbn      = {9781450346535},
-  publisher = {Association for Computing Machinery},
-  address   = {New York, NY, USA},
-  url       = {https://doi.org/10.1145/3098822.3098842},
-  doi       = {10.1145/3098822.3098842},
-  abstract  = {We present our experience with QUIC, an encrypted, multiplexed, and low-latency transport protocol designed from the ground up to improve transport performance for HTTPS traffic and to enable rapid deployment and continued evolution of transport mechanisms. QUIC has been globally deployed at Google on thousands of servers and is used to serve traffic to a range of clients including a widely-used web browser (Chrome) and a popular mobile video streaming app (YouTube). We estimate that 7% of Internet traffic is now QUIC. We describe our motivations for developing a new transport, the principles that guided our design, the Internet-scale process that we used to perform iterative experiments on QUIC, performance improvements seen by our various services, and our experience deploying QUIC globally. We also share lessons about transport design and the Internet ecosystem that we learned from our deployment.},
-  booktitle = {Proceedings of the Conference of the ACM Special Interest Group on Data Communication},
-  pages     = {183–196},
-  numpages  = {14},
-  location  = {Los Angeles, CA, USA},
-  series    = {SIGCOMM '17}
+  title     = {The QUIC Transport Protocol},
+  author    = {Langley, A and Iyengar, J and Bailey, J and Dorfman, J and Roskind, J and Kulik, J and Westin, P and Tenneti, R and Shade, R and Hamilton, R and others},
+  booktitle = {Proceedings of the Conference of the ACM Special Interest Group on Data Communication—SIGCOMM},
+  volume    = {17}
 }
 
 @inproceedings{7997281,
-  author    = {Cook, Sarah and Mathieu, Bertrand and Truong, Patrick and Hamchaoui, Isabelle},
-  booktitle = {2017 IEEE International Conference on Communications (ICC)},
-  title     = {QUIC: Better for what and for whom?},
-  year      = {2017},
-  volume    = {},
-  number    = {},
-  pages     = {1-6},
-  doi       = {10.1109/ICC.2017.7997281}
+  title        = {QUIC: Better for what and for whom?},
+  author       = {Cook, Sarah and Mathieu, Bertrand and Truong, Patrick and Hamchaoui, Isabelle},
+  booktitle    = {2017 IEEE International Conference on Communications (ICC)},
+  pages        = {1--6},
+  year         = {2017},
+  organization = {IEEE}
 }
 
 @inproceedings{9519445,
-  author    = {Hülsing, Andreas and Ning, Kai-Chun and Schwabe, Peter and Weber, Florian and Zimmermann, Philip R.},
-  booktitle = {2021 IEEE Symposium on Security and Privacy (SP)},
-  title     = {Post-quantum WireGuard},
-  year      = {2021},
-  volume    = {},
-  number    = {},
-  pages     = {304-321},
-  doi       = {10.1109/SP40001.2021.00030}
+  title        = {Post-quantum wireguard},
+  author       = {H{\"u}lsing, Andreas and Ning, Kai-Chun and Schwabe, Peter and Weber, Florian and Zimmermann, Philip R},
+  booktitle    = {2021 IEEE Symposium on Security and Privacy (SP)},
+  pages        = {304--321},
+  year         = {2021},
+  organization = {IEEE}
 }
 
 @inproceedings{donenfeld2017wireguard,
@@ -201,21 +94,10 @@
 }
 
 @inproceedings{10.1145/2695664.2695706,
+  title     = {HTTP over UDP},
   author    = {Carlucci, Gaetano and De Cicco, Luca and Mascolo, Saverio},
-  title     = {HTTP over UDP: An Experimental Investigation of QUIC},
-  year      = {2015},
-  isbn      = {9781450331968},
-  publisher = {Association for Computing Machinery},
-  address   = {New York, NY, USA},
-  url       = {https://doi.org/10.1145/2695664.2695706},
-  doi       = {10.1145/2695664.2695706},
-  abstract  = {This paper investigates "Quick UDP Internet Connections" (QUIC), which was proposed by Google in 2012 as a reliable protocol on top of UDP in order to reduce Web Page retrieval time. We first check, through experiments, if QUIC can be safely deployed in the Internet and then we evaluate the Web page load time in comparison with SPDY and HTTP. We have found that QUIC reduces the overall page retrieval time with respect to HTTP in case of a channel without induced random losses and outperforms SPDY in the case of a lossy channel. The FEC module, when enabled, worsens the performance of QUIC.},
-  booktitle = {Proceedings of the 30th Annual ACM Symposium on Applied Computing},
-  pages     = {609–614},
-  numpages  = {6},
-  keywords  = {QUIC, TCP, HTTP, SPDY, UDP, congestion control},
-  location  = {Salamanca, Spain},
-  series    = {SAC '15}
+  booktitle = {Proceedings of the 30th Annual ACM Symposium on Applied Computing. Proceedings of the 30th Annual ACM Symposium on Applied Computing},
+  year      = {2015}
 }
 
 @inproceedings{8850758,
