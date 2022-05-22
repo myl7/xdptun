@@ -2722,7 +2722,8 @@
   % 几种种引用样式，与 \file{bst} 文件名保持一致，
   % 这样在使用 \cs{bibliographystyle} 选择参考文献表的样式时也会设置对应的引用样式。
   \@namedef{bibstyle@ustcthesis-numerical}{\bibstyle@super}
-  \@namedef{bibstyle@ustcthesis-authoryear}{\bibstyle@authoryear}
+  % \@namedef{bibstyle@ustcthesis-authoryear}{\bibstyle@authoryear}
+  \@namedef{bibstyle@ustcthesis-authoryear}{\bibstyle@super}
   \@namedef{bibstyle@ustcthesis-bachelor}{\bibstyle@super}
   %
   % 如果载入 `natbib` 前设置了 `cite-style`，这里先进行配置。
