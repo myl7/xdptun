@@ -5,18 +5,18 @@
 
 \ustcsetup{
   keywords = {
-    计算机网络，增强的伯克利包过滤器，传输控制协议上的用户数据报协议
+    计算机网络，增强的伯克利包过滤器，用户数据报协议
   },
   keywords* = {
-    Computer networking, eBPF, UDP over TCP
+    Computer networking, eBPF, UDP
   },
 }
 
 \begin{abstract}
-  由于 UDP 协议功能和承诺较少，且实际使用中常常承载娱乐性的流量、对服务质量不敏感，以往 UDP 在 QoS 中收到不公平对待，UDP 流量亦在公网中质量不佳。
+  由于 UDP（User Datagram Protocol）协议功能和承诺较少，且实际使用中常常承载娱乐性的流量、对服务质量不敏感，以往 UDP 在 QoS（Quality of Service）中收到不公平对待，UDP 流量亦在公网中质量不佳。
   但随着新一代基于 UDP 的上层网络协议的出现，UDP 流量的重要性有了较大的提升，因而需要处理方案从而在当前网络环境下保证 UDP 流量的质量。
-  常见方案是各种 UDP over TCP 方案，但是这些方案往往实现简单而性能不佳，无法提供透明的转换，也无法轻松复用现有的网络工具。
-  而随着 eBPF 技术逐渐步入成熟，eBPF 中对于网络数据包处理的支持 XDP 和 TC BPF 提供了一套全新的方案以实现高效的包处理。
+  常见方案是各种 UDP over TCP（Transmission Control Protocol）方案，但是这些方案往往实现简单而性能不佳，无法提供透明的转换，也无法轻松复用现有的网络工具。
+  而随着 eBPF（extended Berkeley Packet Filter）技术逐渐步入成熟，eBPF 中对于网络数据包处理的支持 XDP（eXpress Data Path）和 TC（Traffic Control）BPF 提供了一套全新的方案以实现高效的包处理。
   XDP 和 TC BPF 允许程序在 Linux 内核态中、Linux 内核网络栈外捕捉到原始数据帧，并允许 eBPF 程序对其进行修改以改变帧中数据，这使得在 eBPF 之中实现一套 UDP over TCP 机制成为可能。
 
   本文即提供了一套基于 eBPF 的 UDP 包伪装方案 xdptun，克服了 eBPF 高度受限的开发环境，通过在 Linux 内核网络栈入口最前端的 XDP 处和出口最后端的 TC BPF 处加载两份 eBPF 程序进行网络数据帧处理、将 UDP 头部与 TCP 头部互相转换并在帧尾留存从头部末尾处移出的数据，从而将 UDP 流量高效地、透明地伪装为 TCP 流量。
