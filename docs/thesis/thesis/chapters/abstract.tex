@@ -13,7 +13,8 @@
 }
 
 \begin{abstract}
-  由于 UDP（User Datagram Protocol）协议功能和承诺较少，且实际使用中常常承载娱乐性的流量、对服务质量不敏感，以往 UDP 在 QoS（Quality of Service）中收到不公平对待，UDP 流量亦在公网中质量不佳。
+  UDP（User Datagram Protocol）是工作在网络层之上的一份传输层网络协议。
+  由于 UDP 协议功能和承诺较少，且实际使用中常常承载娱乐性的流量、对服务质量不敏感，以往 UDP 在 QoS（Quality of Service）中收到不公平对待，UDP 流量亦在公网中质量不佳。
   但随着新一代基于 UDP 的上层网络协议的出现，UDP 流量的重要性有了较大的提升，因而需要处理方案从而在当前网络环境下保证 UDP 流量的质量。
   常见方案是各种 UDP over TCP（Transmission Control Protocol）方案，但是这些方案往往实现简单而性能不佳，无法提供透明的转换，也无法轻松复用现有的网络工具。
   而随着 eBPF（extended Berkeley Packet Filter）技术逐渐步入成熟，eBPF 中对于网络数据包处理的支持 XDP（eXpress Data Path）和 TC（Traffic Control）BPF 提供了一套全新的方案以实现高效的包处理。
@@ -28,6 +29,7 @@
 \end{abstract}
 
 \begin{abstract*}
+  UDP is a transport layer protocol working upon network layer.
   Considering functions and promises included in UDP are little, and in the real network environment, UDP usually ships entertainment traffic which cares little about traffic quality, UDP traffic used to receive unfair treatment in QoS and be inefficent in the Internet.
   But as the new generation of upper layer network protocol comes out, the importance of UDP traffic increases, and we required solutions to ensure the quality of UDP traffic in current Internet.
   Common solutions are various UDP over TCP, but current implementations are too simgle so that they are not efficient, can not provide transparent processing, and are difficult to reuse existing network stack.
