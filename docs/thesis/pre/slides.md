@@ -74,7 +74,7 @@ Linux 网络栈上的 BPF：
 
 <div style="display: flex; gap: 1em"><div>
 
-![](images/xdptun-flow-egress.drawio.svg)
+![](/images/xdptun-flow-egress.drawio.svg)
 
 图中 L2、L3、L4 分别为链路层、网络层、传输层的缩写，后同
 
@@ -92,7 +92,7 @@ TODO
 
 <div style="display: flex; gap: 1em"><div>
 
-![](images/xdptun-flow-ingress.drawio.svg)
+![](/images/xdptun-flow-ingress.drawio.svg)
 
 </div><div>
 
