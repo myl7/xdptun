@@ -110,7 +110,18 @@ Linux 网络栈上的 BPF：
 
 # 总结与展望
 
-TODO
+本项目 xdptun 作为一套 UDP over TCP 包伪装方案，能够突破传统 UDP over TCP 方案的局限，不仅仅依赖于 Linux API 提供的网络栈在用户态进行处理，而是借助 eBPF
+直接在内核态、于 Linux 内核网络栈外进行数据包的伪装和解伪装
+
+本项目依然存在可以改进和发展的空间：
+
+- TCP 碎片伪装为 TCP 连接
+  - 伪造开启 TCP 连接的 SYN、ACK-SYN、ACK
+  - TCP 头部序列号字段改为连续值
+  - Pre-core 无锁持久化
+- eBPF 生态
+  - Linux 内核版本
+  - eBPF 周边设施，例如 daemonization
 
 ---
 
