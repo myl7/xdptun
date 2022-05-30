@@ -19,11 +19,15 @@ UDP packet obfuscation with eBPF
 
 # 目录
 
+<div style="font-size: 2rem">
+
 - 绪论
 - 理论基础
 - 设计方案
 - 测试与分析
 - 总结与展望
+
+</div>
 
 ---
 
@@ -66,11 +70,35 @@ Linux 网络栈上的 BPF：
 
 # 设计方案
 
-流程图
+出方向
 
-![](images/xdptun-flow.drawio.svg)
+<div style="display: flex; gap: 1em"><div>
 
-图中 L2、L3、L4 分别为链路层、网络层、传输层的缩写
+![](images/xdptun-flow-egress.drawio.svg)
+
+图中 L2、L3、L4 分别为链路层、网络层、传输层的缩写，后同
+
+</div><div>
+
+TODO
+
+</div></div>
+
+---
+
+# 设计方案
+
+入方向
+
+<div style="display: flex; gap: 1em"><div>
+
+![](images/xdptun-flow-ingress.drawio.svg)
+
+</div><div>
+
+TODO
+
+</div></div>
 
 ---
 
@@ -109,6 +137,8 @@ Linux 网络栈上的 BPF：
 ---
 
 # 总结与展望
+
+总结与展望
 
 本项目 xdptun 作为一套 UDP over TCP 包伪装方案，能够突破传统 UDP over TCP 方案的局限，不仅仅依赖于 Linux API 提供的网络栈在用户态进行处理，而是借助 eBPF
 直接在内核态、于 Linux 内核网络栈外进行数据包的伪装和解伪装
