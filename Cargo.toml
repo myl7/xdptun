@@ -1,0 +1,21 @@
+[package]
+name = "xdptun"
+version = "0.2.0"
+edition = "2021"
+authors = ["myl7 <myl@myl.moe>"]
+description = "UDP packet obfuscation with eBPF, which tunnels UDP over pseudo-TCP"
+documentation = "https://github.com/myl7/xdptun#readme"
+homepage = "https://github.com/myl7/xdptun"
+repository = "https://github.com/myl7/xdptun.git"
+license = "GPL-2.0-or-later"
+keywords = ["ebpf", "xdp", "udp-over-tcp", "tc-bpf", "udp-obfuscation"]
+categories = ["network-programming"]
+
+[dependencies]
+libbpf-rs = "0.19.1"
+clap = { version = "4.1.1", features = ["derive"] }
+anyhow = "1.0.68"
+nix = "0.26.2"
+
+[build-dependencies]
+libbpf-cargo = "0.13.1"
