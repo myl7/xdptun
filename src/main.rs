@@ -1,6 +1,7 @@
 // Copyright (C) 2023 myl7
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+use std::net::Ipv4Addr;
 use std::{fmt, ptr};
 
 use clap::{Parser, ValueEnum};
@@ -18,11 +19,9 @@ fn main() -> anyhow::Result<()> {
     let ifidx = nix::net::if_::if_nametoindex(cli.iface.as_str()).unwrap() as i32;
     match cli.direction {
         Direction::Egress => {
-            let skel = egress::EgressSkelBuilder::default()
-                .open()
-                .unwrap()
-                .load()
-                .unwrap();
+            let mut open_skel = egress::EgressSkelBuilder::default().open().unwrap();
+            open_skel.rodata().peer_ip = cli.peer.into();
+            let skel = open_skel.load().unwrap();
             let fd = skel.progs().egress_f().fd();
 
             let mut builder = TcHookBuilder::new();
@@ -116,6 +115,10 @@ struct Cli {
     /// Ingress XDP attach mode
     #[clap(short = 'm', long, default_value_t = InMode::DRV)]
     inmode: InMode,
+
+    /// Peer IPv4 IP of which traffic will be filtered and modified
+    #[clap(short, long)]
+    peer: Ipv4Addr,
 }
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum Direction {
