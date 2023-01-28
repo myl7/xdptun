@@ -35,35 +35,22 @@ int egress(struct __sk_buff *skb) {
   if (err) return TC_ACT_OK;
 
   // This section contains many dup pkt bound checks,
-  // since BPF verifier is not smart enough to allow the read
+  // since one check for all read is not admitted by the BPF verifier.
   data = (void *)(long)skb->data;
   data_end = (void *)(long)skb->data_end;
   u8 all_hlen = sizeof(struct ethhdr) + ip_hlen + sizeof(struct udphdr);
   u8 i;
   // Manual memmove since len is from variable
-  for (i = sizeof(struct ethhdr); i < all_hlen - 4; i += 4) {
+  for (i = sizeof(struct ethhdr); i < all_hlen; i += 4) {
     if (data + 12 + i + 4 > data_end) return TC_ACT_SHOT;
     __builtin_memcpy(data + i, data + 12 + i, 4);
   }
-  switch (all_hlen - i) {
-    case 4:
-      if (data + 12 + i + 4 > data_end) return TC_ACT_SHOT;
-      __builtin_memcpy(data + i, data + 12 + i, 4);
-      break;
-    case 2:
-      if (data + 12 + i + 2 > data_end) return TC_ACT_SHOT;
-      __builtin_memcpy(data + i, data + 12 + i, 2);
-      break;
-    default:
-      return TC_ACT_SHOT;
-  }
-  // Note: UDP len & check, which are at TCP seq, are not zeroed so far
   if (data + all_hlen + 12 > data_end) return TC_ACT_SHOT;
-  __builtin_memset(data + all_hlen + 4, 0, sizeof(struct udphdr));
+  __builtin_memset(data + all_hlen, 0, 12);
   s64 check_diff = 0;
 
   ip = data + sizeof(struct ethhdr);
-  if ((void *)ip + ip_hlen > data_end) return TC_ACT_SHOT;
+  // Above dup checks have covered IPv4 header range so here bound check can be skipped
   u32 ip_words[3];
   __builtin_memcpy(ip_words, ip, 12);
   ip->protocol = IPPROTO_UDP;
