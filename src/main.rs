@@ -22,7 +22,7 @@ fn main() -> anyhow::Result<()> {
             let mut open_skel = egress::EgressSkelBuilder::default().open().unwrap();
             open_skel.rodata().peer_ip = cli.peer.into();
             let skel = open_skel.load().unwrap();
-            let fd = skel.progs().egress_f().fd();
+            let fd = skel.progs().egress().fd();
 
             let mut builder = TcHookBuilder::new();
             // Params are from libbpf/libbpf-rs /examples/tc_port_whitelist
@@ -57,7 +57,7 @@ fn main() -> anyhow::Result<()> {
                 .unwrap()
                 .load()
                 .unwrap();
-            let fd = skel.progs().ingress_f().fd();
+            let fd = skel.progs().ingress().fd();
 
             let in_mode = match cli.inmode {
                 InMode::HW => libbpf_sys::XDP_FLAGS_HW_MODE,

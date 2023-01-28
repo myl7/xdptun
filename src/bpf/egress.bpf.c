@@ -12,7 +12,7 @@ const char LICENSE[] SEC("license") = "GPL";
 const volatile u32 peer_ip = 0;
 
 SEC("tc")
-int egress_f(struct __sk_buff *skb) {
+int egress(struct __sk_buff *skb) {
   int err;
   void *data = (void *)(long)skb->data;
   void *data_end = (void *)(long)skb->data_end;

@@ -9,6 +9,6 @@
 const char LICENSE[] SEC("license") = "GPL";
 
 SEC("xdp")
-int ingress_f(struct xdp_md *ctx) {
+int ingress(struct xdp_md *ctx) {
   return XDP_DROP;
 }
