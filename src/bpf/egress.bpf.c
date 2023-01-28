@@ -19,7 +19,7 @@ int egress(struct __sk_buff *skb) {
 
   struct ethhdr *eth = data;
   if ((void *)(eth + 1) > data_end) return TC_ACT_SHOT;
-  if (bpf_ntohs(eth->h_proto) != ETH_P_IP) return TC_ACT_OK;
+  if (eth->h_proto != bpf_htons(ETH_P_IP)) return TC_ACT_OK;
 
   struct iphdr *ip = data + sizeof(struct ethhdr);
   if ((void *)(ip + 1) > data_end) return TC_ACT_SHOT;
@@ -32,7 +32,7 @@ int egress(struct __sk_buff *skb) {
   if (bpf_ntohl(ip->daddr) != peer_ip) return TC_ACT_OK;
 
   err = bpf_skb_change_head(skb, 12, 0);
-  if (err) return TC_ACT_OK;
+  if (err) return TC_ACT_SHOT;
 
   // This section contains many dup pkt bound checks,
   // since one check for all read is not admitted by the BPF verifier.
@@ -47,7 +47,6 @@ int egress(struct __sk_buff *skb) {
   }
   if (data + all_hlen + 12 > data_end) return TC_ACT_SHOT;
   __builtin_memset(data + all_hlen, 0, 12);
-  s64 check_diff = 0;
 
   ip = data + sizeof(struct ethhdr);
   // Above dup checks have covered IPv4 header range so here bound check can be skipped
@@ -55,7 +54,7 @@ int egress(struct __sk_buff *skb) {
   __builtin_memcpy(ip_words, ip, 12);
   ip->protocol = IPPROTO_UDP;
   ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) + 12);
-  check_diff += bpf_csum_diff(ip_words, 12, (void *)ip, 12, ip->check);
+  s64 check_diff = bpf_csum_diff(ip_words, 12, (void *)ip, 12, 0);
 
   struct tcphdr *tcp = data + sizeof(struct ethhdr) + ip_hlen;
   if ((void *)(tcp + 1) > data_end) return TC_ACT_SHOT;
@@ -63,9 +62,8 @@ int egress(struct __sk_buff *skb) {
   __builtin_memcpy(tcp_words, tcp, 16);
   tcp->doff = 5;
   tcp->seq = 0;
-  check_diff += bpf_csum_diff(tcp_words, 16, (void *)tcp, 16, check_diff);
 
-  err = bpf_l3_csum_replace(skb, (void *)&ip->check - data, 0, check_diff, 0);
+  err = bpf_l3_csum_replace(skb, sizeof(struct ethhdr) + offsetof(struct iphdr, check), 0, check_diff, 0);
   if (err) return TC_ACT_SHOT;
 
   return TC_ACT_OK;
