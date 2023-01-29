@@ -14,7 +14,7 @@ const volatile u32 peer_ip = 0;
 
 SEC("tc")
 int egress(struct __sk_buff *skb) {
-  int err;
+  long err;
   void *data = (void *)(long)skb->data;
   void *data_end = (void *)(long)skb->data_end;
 
@@ -36,6 +36,15 @@ int egress(struct __sk_buff *skb) {
   u16 ip_padded_tot_len = ip_tot_len < min_ip_tot_len ? min_ip_tot_len : ip_tot_len + (4 - ip_tot_len % 4) % 4;
   u16 padded_len = ip_padded_tot_len - ip_tot_len;
   const u16 extended_len = 12 + sizeof(struct xdptun_tail_meta);
+  // Limit ip_padded_tot_len static upper bound for BPF verifier
+  // TODO: Provide an option
+  if (ip_padded_tot_len + extended_len > 0xff) {
+    bpf_printk("xdptun-egress: packet out too large that ip_tot_len > %d", 0xff);
+    // TODO: Custom action
+    return TC_ACT_OK;
+  }
+  // Filter OK
+
   err = bpf_skb_change_tail(skb, sizeof(struct ethhdr) + ip_tot_len + padded_len + extended_len, 0);
   if (err) {
     bpf_printk("xdptun-egress: skb_change_tail failed with %d", err);
@@ -47,12 +56,6 @@ int egress(struct __sk_buff *skb) {
 
   void *udp_body = data + sizeof(struct ethhdr) + ip_hlen + sizeof(struct udphdr);
   if (udp_body + 12 > data_end) return TC_ACT_SHOT;
-  // Limit ip_padded_tot_len static upper bound for BPF verifier
-  // TODO: Provide an option
-  if (ip_padded_tot_len + extended_len > 0xff) {
-    bpf_printk("xdptun-egress: packet out too large that > %d", 0xff);
-    return TC_ACT_SHOT;
-  }
   // tail = old data_end + padded_len
   void *tail = data + sizeof(struct ethhdr) + ip_padded_tot_len;
   if (tail + extended_len > data_end) return TC_ACT_SHOT;
