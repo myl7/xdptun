@@ -6,6 +6,7 @@
 #include <bpf/bpf_endian.h>
 
 #include "egress.h"
+#include "tail_meta.h"
 
 const char LICENSE[] SEC("license") = "GPL";
 
@@ -19,41 +20,60 @@ int egress(struct __sk_buff *skb) {
 
   struct ethhdr *eth = data;
   if ((void *)(eth + 1) > data_end) return TC_ACT_SHOT;
+  // Take advantage of __bpf_constant_hton*
   if (eth->h_proto != bpf_htons(ETH_P_IP)) return TC_ACT_OK;
 
   struct iphdr *ip = data + sizeof(struct ethhdr);
   if ((void *)(ip + 1) > data_end) return TC_ACT_SHOT;
   u8 ip_hlen = ip->ihl * 4;
-  if (ip_hlen < sizeof(struct iphdr)) return TC_ACT_SHOT;
-  // Limit upper bound for manual memmove
-  if (ip_hlen > 60) return TC_ACT_SHOT;
   if ((void *)ip + ip_hlen > data_end) return TC_ACT_SHOT;
   if (ip->protocol != IPPROTO_UDP) return TC_ACT_OK;
   if (bpf_ntohl(ip->daddr) != peer_ip) return TC_ACT_OK;
 
-  err = bpf_skb_change_head(skb, 12, 0);
-  if (err) return TC_ACT_SHOT;
+  u16 ip_tot_len = bpf_ntohs(ip->tot_len);
+  u16 min_ip_tot_len = ip_hlen + sizeof(struct udphdr) + 12;
+  // To align word and handle if UDP body len < 12
+  u16 ip_padded_tot_len = ip_tot_len < min_ip_tot_len ? min_ip_tot_len : ip_tot_len + (4 - ip_tot_len % 4) % 4;
+  u16 padded_len = ip_padded_tot_len - ip_tot_len;
+  const u16 extended_len = 12 + sizeof(struct xdptun_tail_meta);
+  err = bpf_skb_change_tail(skb, sizeof(struct ethhdr) + ip_tot_len + padded_len + extended_len, 0);
+  if (err) {
+    bpf_printk("xdptun-egress: skb_change_tail failed with %d", err);
+    return TC_ACT_SHOT;
+  }
 
-  // This section contains many dup pkt bound checks,
-  // since one check for all read is not admitted by the BPF verifier.
   data = (void *)(long)skb->data;
   data_end = (void *)(long)skb->data_end;
-  u8 all_hlen = sizeof(struct ethhdr) + ip_hlen + sizeof(struct udphdr);
-  u8 i;
-  // Manual memmove since len is from variable
-  for (i = sizeof(struct ethhdr); i < all_hlen; i += 4) {
-    if (data + 12 + i + 4 > data_end) return TC_ACT_SHOT;
-    __builtin_memcpy(data + i, data + 12 + i, 4);
+
+  void *udp_body = data + sizeof(struct ethhdr) + ip_hlen + sizeof(struct udphdr);
+  if (udp_body + 12 > data_end) return TC_ACT_SHOT;
+  // Limit ip_padded_tot_len static upper bound for BPF verifier
+  // TODO: Provide an option
+  if (ip_padded_tot_len + extended_len > 0xff) {
+    bpf_printk("xdptun-egress: packet out too large that > %d", 0xff);
+    return TC_ACT_SHOT;
   }
-  if (data + all_hlen + 12 > data_end) return TC_ACT_SHOT;
-  __builtin_memset(data + all_hlen, 0, 12);
+  // tail = old data_end + padded_len
+  void *tail = data + sizeof(struct ethhdr) + ip_padded_tot_len;
+  if (tail + extended_len > data_end) return TC_ACT_SHOT;
+  __builtin_memcpy(tail, udp_body, 12);
+  __builtin_memset(udp_body, 0, 12);
+
+  struct udphdr *udp = data + sizeof(struct ethhdr) + ip_hlen;
+  if ((void *)(udp + 1) > data_end) return TC_ACT_SHOT;
+  struct xdptun_tail_meta meta = {
+    .udp_len = udp->len,
+  };
+  // tail has been checked
+  __builtin_memcpy(tail + 12, &meta, sizeof(struct xdptun_tail_meta));
 
   ip = data + sizeof(struct ethhdr);
-  // Above dup checks have covered IPv4 header range so here bound check can be skipped
+  if ((void *)(ip + 1) > data_end) return TC_ACT_SHOT;
+  if ((void *)ip + ip_hlen > data_end) return TC_ACT_SHOT;
   u32 ip_words[3];
   __builtin_memcpy(ip_words, ip, 12);
-  ip->protocol = IPPROTO_UDP;
-  ip->tot_len = bpf_htons(bpf_ntohs(ip->tot_len) + 12);
+  ip->protocol = IPPROTO_TCP;
+  ip->tot_len = bpf_htons(ip_tot_len + padded_len + extended_len);
   s64 check_diff = bpf_csum_diff(ip_words, 12, (void *)ip, 12, 0);
 
   struct tcphdr *tcp = data + sizeof(struct ethhdr) + ip_hlen;
