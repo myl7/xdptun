@@ -9,6 +9,6 @@ UDP packet obfuscation with eBPF, which tunnels UDP over pseudo-TCP
 
 ## License
 
-Copyright (C) 2022, 2023 myl7
+Copyright (C) myl7
 
 SPDX-License-Identifier: GPL-2.0-or-later

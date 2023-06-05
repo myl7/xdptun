@@ -1,4 +1,4 @@
-// Copyright (C) 2023 myl7
+// Copyright (C) myl7
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 use std::net::Ipv4Addr;
@@ -109,7 +109,7 @@ fn main() -> anyhow::Result<()> {
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[command(after_help = "\
-Copyright (C) 2022, 2023 myl7
+Copyright (C) myl7
 SPDX-License-Identifier: GPL-2.0-or-later
 Homepage: https://github.com/myl7/xdptun
 ")]
