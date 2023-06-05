@@ -8,10 +8,9 @@
 #include "ingress.h"
 #include "tail_meta.h"
 #include "csum.h"
+#include "filter.h"
 
 const char LICENSE[] SEC("license") = "GPL";
-
-const volatile u32 peer_ip = 0;
 
 SEC("xdp")
 int ingress(struct xdp_md *ctx) {
@@ -28,7 +27,7 @@ int ingress(struct xdp_md *ctx) {
   u8 ip_hlen = ip->ihl * 4;
   if ((void *)ip + ip_hlen > data_end) return XDP_DROP;
   if (ip->protocol != IPPROTO_UDP) return XDP_PASS;
-  if (bpf_ntohl(ip->saddr) != peer_ip) return XDP_PASS;
+  if (!filter(ip)) return XDP_PASS;
   u16 ip_tot_len = bpf_ntohs(ip->tot_len);
   const extended_len = 12 + sizeof(struct xdptun_tail_meta);
   u16 tail_offset = ip_tot_len - extended_len;

@@ -7,10 +7,9 @@
 
 #include "egress.h"
 #include "tail_meta.h"
+#include "filter.h"
 
 const char LICENSE[] SEC("license") = "GPL";
-
-const volatile u32 peer_ip = 0;
 
 SEC("tc")
 int egress(struct __sk_buff *skb) {
@@ -28,7 +27,7 @@ int egress(struct __sk_buff *skb) {
   u8 ip_hlen = ip->ihl * 4;
   if ((void *)ip + ip_hlen > data_end) return TC_ACT_SHOT;
   if (ip->protocol != IPPROTO_UDP) return TC_ACT_OK;
-  if (bpf_ntohl(ip->daddr) != peer_ip) return TC_ACT_OK;
+  if (!filter(ip)) return TC_ACT_OK;
 
   u16 ip_tot_len = bpf_ntohs(ip->tot_len);
   u16 min_ip_tot_len = ip_hlen + sizeof(struct udphdr) + 12;
