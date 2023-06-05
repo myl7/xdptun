@@ -13,13 +13,13 @@ fn main() {
         // For BTF
         .debug(true)
         // Since include! is also concatting
-        .build_and_generate(out_dir.clone() + "/egress.skel.rs")
+        .build_and_generate([&out_dir, "/egress.skel.rs"].concat())
         .unwrap();
     println!("cargo:rerun-if-changed=src/bpf/egress.bpf.c");
     SkeletonBuilder::new()
         .source("src/bpf/ingress.bpf.c")
         .debug(true)
-        .build_and_generate(out_dir.clone() + "/ingress.skel.rs")
+        .build_and_generate([&out_dir, "/ingress.skel.rs"].concat())
         .unwrap();
     println!("cargo:rerun-if-changed=src/bpf/ingress.bpf.c");
 }
