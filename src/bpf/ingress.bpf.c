@@ -7,6 +7,7 @@
 
 #include "ingress.h"
 #include "tail_meta.h"
+#include "csum.h"
 
 const char LICENSE[] SEC("license") = "GPL";
 
